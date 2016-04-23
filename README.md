@@ -7,7 +7,6 @@ A Windows installer for [Hack](https://github.com/chrissimpkins/Hack).
 - Download from [Releases](https://github.com/source-foundry/Hack-windows-installer/releases/)
 - Run HackWindowsInstaller.exe
 - Follow the instructions
-- Enjoy 
 
 ## Silent Installation
 
@@ -23,15 +22,11 @@ To remove it silently:
 
 The installer always creates a log file as C:\Users\ (Username) \AppData\Local\Temp\Setup Log (Year-Month-Day) #<XXX>.txt.
 
-If you are using EMET: If the "Only trusted fonts" option is activated, you need to declare Hack as trusted or they will not be visible.
+If you are using EMET: If the "Only trusted fonts" option is activated, you need to declare Hack as trusted or it will not be usable.
 
 ## Contributions
 
-Any constructive contribution is very welcome! 
-
-If you encounter a bug with the installation, please create a new issue, describing how to reproduce the bug and I will try to fix it.
-
-In case you want the setup to include another font, please also open an issue and I will consider adding it. Please note: I will not accept fonts without any project activity for more than a year. 
+Any constructive contribution is very welcome! If you have any question or encounter a bug, please create a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new). 
 
 ## About
-Copyright © 2016 [Michael Hex](http://www.texhex.info/) for Source Foundry. Licensed under the **MIT License**. For details, please see LICENSE.
+Copyright © 2016 [Michael Hex](http://www.texhex.info/) / Source Foundry. Licensed under the **MIT License**. For details, please see LICENSE.
