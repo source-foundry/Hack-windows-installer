@@ -34,8 +34,6 @@ If you are using EMET: If the "Only trusted fonts" option is activated, you need
 
 Any constructive contribution is very welcome! If you have any question or encounter a bug, please create a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new).
 
-## Why does this 
-
 ## Build from source
 
 To build this setup yourself, download the newest ANSI (not unicode)  version of [Inno Setup](http://www.jrsoftware.org/isdl.php). Install it and activate the option to install the [Inno Setup Preprocessor](http://www.jrsoftware.org/ispphelp/). 
