@@ -37,7 +37,7 @@
 
 //Copyright information 
 #define public Copyright 'Copyright © 2016 Michael Hex / Source Foundry'
-//
+
 
 //Internal names of the services 
 #define public FontCacheService 'FontCache'
@@ -57,11 +57,6 @@
 
 //Counter for array
 #define cntr 0
-
-
-//Definition for Hack Font
-//#define hack_component 'hack'
-//#define hack_description 'Hack by Christopher Simpkins'
 
 
 
@@ -233,12 +228,11 @@ Type: files; Name: "{fonts}\Hack-RegularOblique.ttf";
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "{#Version}"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#AppName}"
 
 [UninstallDelete]
 ;Delete Install Info
 Type: files; Name: "{app}\InstallInfo.ini"
-
-
 
 
 

@@ -41,7 +41,6 @@
 
 
 
-
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
 
@@ -58,10 +57,6 @@
 
 
 ;General procedure
-; a) Welcome page (Needed to display the version of this setup)
-; b) License is shown
-; c) Readme is displayed
-; d) Select fonts to install 
 ; e) Ready to install
 ; d) INSTALL
 ; d1) InstallDelete
@@ -89,6 +84,7 @@ AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
 
 ;No icon?
 ;UninstallDisplayIcon
+;SetupIconFile 
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
@@ -175,12 +171,11 @@ Type: files; Name: "{fonts}\Hack-RegularOblique.ttf";
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.0.0"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
 ;Delete Install Info
 Type: files; Name: "{app}\InstallInfo.ini"
-
-
 
 
 
