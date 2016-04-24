@@ -8,6 +8,12 @@ A Windows installer for [Hack](https://github.com/chrissimpkins/Hack).
 - Run HackWindowsInstaller.exe
 - Follow the instructions
 
+## Why this project exists
+
+It might seem to be overkill to have an installation tool just for some fonts, but a lot of things can go wrong when trying to install or update them manually (see [issue #152](https://github.com/chrissimpkins/Hack/issues/152) in the Hack repository).
+
+The installer can prevent most of these issues. A (not complete) list of things that can go wrong can be found in [FontInstallationIssues.md](https://github.com/source-foundry/Hack-windows-installer/blob/master/FontInstallationIssues.md).
+
 ## Silent Installation
 
 To install silently, use the following command:
@@ -27,6 +33,8 @@ If you are using EMET: If the "Only trusted fonts" option is activated, you need
 ## Contributions
 
 Any constructive contribution is very welcome! If you have any question or encounter a bug, please create a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new).
+
+## Why does this 
 
 ## Build from source
 

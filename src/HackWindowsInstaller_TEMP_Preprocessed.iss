@@ -18,7 +18,11 @@
 
 
 
+
+
 ; ISPP: Base Path C:\dev\git\Hack-windows-installer\
+
+
 
 
 
@@ -73,12 +77,12 @@ AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_SetupMutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.0.0
-VersionInfoVersion=1.0.0
+AppVersion=1.0.1
+VersionInfoVersion=1.0.1
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
-AppSupportURL=http://sourcefoundry.org/hack/
+AppSupportURL=https://github.com/source-foundry/Hack-windows-installer
 AppComments=Hack font installer
 AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
 
@@ -170,7 +174,7 @@ Type: files; Name: "{fonts}\Hack-RegularOblique.ttf";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.0.0"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.0.1"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
@@ -178,6 +182,16 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack W
 Type: files; Name: "{app}\InstallInfo.ini"
 
 
+[Messages]
+;Message for the "Read to install" wizard page
+;"Ready To Install"
+;WizardReady=
+
+;"Setup is now ready to begin installing ...."
+ReadyLabel1=
+;"Click Install to continue with the installation" 
+ReadyLabel2b=Setup is now ready to install the Hack fonts v2.019 on your system.
+;%n%nClick Install to continue.
 
 
 [Code]
@@ -398,6 +412,20 @@ begin
   customPrepareToInstall:=CreateOutputProgressPage(title, subTitle);
 end;
 
+
+{ //Not used right now - See [Messages]
+function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;
+var
+ text:string;
+begin
+ text:='';
+ text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;
+ text:=text + NewLine;
+ text:=text + 'Click Install to continue.' + NewLine;
+
+ result:=text;
+end;
+}
 
 
 function IsSetupFontSameAsInstalledFont(fileName:string):boolean;

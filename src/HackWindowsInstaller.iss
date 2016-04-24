@@ -18,13 +18,15 @@
 //#define DEBUG
 
 //Update this when releasing a new version
-#define public Version '1.0.0'
+#define public Version '1.0.1'
 
 //This defines in which sub folder of this project the current files are located
 #define public HackMonospaced_Sourcefolder 'Hack_v2_019'
 
-//URL of the project homepage of the FONT 
-#define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/' /*'https://github.com/chrissimpkins/Hack'*/
+//This definies the version of Hack monospaces
+#define public HackMonospaced_Version '2.019'
+
+
 
 
 //--------------------------------------------------------------------
@@ -34,6 +36,12 @@
 
 //Name of this setup
 #define public AppName 'Hack Windows Installer'
+
+//URL of the project homepage of the FONT 
+#define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/' /*'https://github.com/chrissimpkins/Hack'*/
+
+//URL of the installer homepage
+#define public Installer_Homepage 'https://github.com/source-foundry/Hack-windows-installer'
 
 //Copyright information 
 #define public Copyright 'Copyright © 2016 Michael Hex / Source Foundry'
@@ -129,7 +137,7 @@ VersionInfoVersion={#Version}
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
-AppSupportURL={#HackMonospaced_Homepage}
+AppSupportURL={#Installer_Homepage}
 AppComments=Hack font installer
 AppCopyright={#Copyright}
 
@@ -235,6 +243,16 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#AppN
 Type: files; Name: "{app}\InstallInfo.ini"
 
 
+[Messages]
+;Message for the "Read to install" wizard page
+;"Ready To Install"
+;WizardReady=
+
+;"Setup is now ready to begin installing ...."
+ReadyLabel1=
+;"Click Install to continue with the installation" 
+ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
+;%n%nClick Install to continue.
 
 
 [Code]
@@ -477,6 +495,20 @@ begin
   customPrepareToInstall:=CreateOutputProgressPage(title, subTitle);
 end;
 
+
+{ //Not used right now - See [Messages]
+function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;
+var
+ text:string;
+begin
+ text:='';
+ text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;
+ text:=text + NewLine;
+ text:=text + 'Click Install to continue.' + NewLine;
+
+ result:=text;
+end;
+}
 
 
 //This function returns TRUE if:
