@@ -1,6 +1,6 @@
 # Hack Windows Installer
 
-A Windows installer for [Hack](https://github.com/chrissimpkins/Hack).
+A Windows installer for the [Hack](https://github.com/chrissimpkins/Hack) typeface.
 
 ## Usage
 
