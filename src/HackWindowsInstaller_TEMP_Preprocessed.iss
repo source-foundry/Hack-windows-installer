@@ -60,6 +60,7 @@
 
 
 
+
 ;General procedure
 ; e) Ready to install
 ; d) INSTALL
@@ -77,8 +78,8 @@ AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_SetupMutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.0.1
-VersionInfoVersion=1.0.1
+AppVersion=1.0.2
+VersionInfoVersion=1.0.2
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
@@ -86,9 +87,11 @@ AppSupportURL=https://github.com/source-foundry/Hack-windows-installer
 AppComments=Hack font installer
 AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
 
-;No icon?
-;UninstallDisplayIcon
-;SetupIconFile 
+;This icon is used for the icon of HackWindowsInstaller.exe itself
+SetupIconFile=img\Hack-installer-icon.ico
+;This icon will be displayed in Add/Remove programs and needs to be installed locally
+UninstallDisplayIcon={app}\Hack-installer-icon.ico
+
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
@@ -117,23 +120,29 @@ SolidCompression=yes
 
 PrivilegesRequired=admin
 
-;Only include LicenseFile and InfoBeforeFile when using a release build
-;#ifndef DEBUG
-;Might be disabled later on
-DisableWelcomePage=yes
-
-;License information
-;LicenseFile=LICENSE.txt
-
-;readme
-;InfoBeforeFile=readme.md
-
-;#endif
-
 ;Ignore some screens
+DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 AllowCancelDuringInstall=False
+
+
+[Messages]
+;Default Windows/App text
+;SetupAppTitle is displayed in the taskbar
+SetupAppTitle=Hack Windows Installer
+;SetupWindowsTitle is displayed in the setup window itself so better include the version
+SetupWindowTitle=Hack Windows Installer 1.0.2
+
+;Message for the "Read to install" wizard page
+  ;NOT USED - "Ready To Install" - below title bar
+  ;WizardReady=
+;"Setup is now ready to begin installing ...."
+ReadyLabel1=
+;"Click Install to continue with the installation" 
+ReadyLabel2b=Setup is now ready to install the Hack fonts v2.019 on your system.
+
+
 
 
 [Icons]
@@ -146,6 +155,9 @@ Name: "{app}\Hack Homepage"; Filename: "http://sourcefoundry.org/hack/";
 [Files]
 ;Copy license files - always copied
 Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
+
+;Copy the icon to the installation folder in order to show it in Add/Remove programs
+Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 ;Install fonts
   Source: "fonts\Hack_v2_019\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
@@ -174,7 +186,7 @@ Type: files; Name: "{fonts}\Hack-RegularOblique.ttf";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.0.1"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.0.2"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
@@ -182,16 +194,6 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack W
 Type: files; Name: "{app}\InstallInfo.ini"
 
 
-[Messages]
-;Message for the "Read to install" wizard page
-;"Ready To Install"
-;WizardReady=
-
-;"Setup is now ready to begin installing ...."
-ReadyLabel1=
-;"Click Install to continue with the installation" 
-ReadyLabel2b=Setup is now ready to install the Hack fonts v2.019 on your system.
-;%n%nClick Install to continue.
 
 
 [Code]

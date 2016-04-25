@@ -18,7 +18,7 @@
 //#define DEBUG
 
 //Update this when releasing a new version
-#define public Version '1.0.1'
+#define public Version '1.0.2'
 
 //This defines in which sub folder of this project the current files are located
 #define public HackMonospaced_Sourcefolder 'Hack_v2_019'
@@ -115,6 +115,7 @@
 
 
 
+
 ;General procedure
 ; e) Ready to install
 ; d) INSTALL
@@ -141,9 +142,11 @@ AppSupportURL={#Installer_Homepage}
 AppComments=Hack font installer
 AppCopyright={#Copyright}
 
-;No icon?
-;UninstallDisplayIcon
-;SetupIconFile 
+;This icon is used for the icon of HackWindowsInstaller.exe itself
+SetupIconFile=img\Hack-installer-icon.ico
+;This icon will be displayed in Add/Remove programs and needs to be installed locally
+UninstallDisplayIcon={app}\Hack-installer-icon.ico
+
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
@@ -172,23 +175,29 @@ SolidCompression=yes
 
 PrivilegesRequired=admin
 
-;Only include LicenseFile and InfoBeforeFile when using a release build
-;#ifndef DEBUG
-;Might be disabled later on
-DisableWelcomePage=yes
-
-;License information
-;LicenseFile=LICENSE.txt
-
-;readme
-;InfoBeforeFile=readme.md
-
-;#endif
-
 ;Ignore some screens
+DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 AllowCancelDuringInstall=False
+
+
+[Messages]
+;Default Windows/App text
+;SetupAppTitle is displayed in the taskbar
+SetupAppTitle={#AppName}
+;SetupWindowsTitle is displayed in the setup window itself so better include the version
+SetupWindowTitle={#AppName} {#Version}
+
+;Message for the "Read to install" wizard page
+  ;NOT USED - "Ready To Install" - below title bar
+  ;WizardReady=
+;"Setup is now ready to begin installing ...."
+ReadyLabel1=
+;"Click Install to continue with the installation" 
+ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
+
+
 
 
 [Icons]
@@ -201,6 +210,9 @@ Name: "{app}\Hack Homepage"; Filename: "{#HackMonospaced_Homepage}";
 [Files]
 ;Copy license files - always copied
 Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
+
+;Copy the icon to the installation folder in order to show it in Add/Remove programs
+Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 ;Install fonts
 #define public i 0
@@ -243,16 +255,6 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#AppN
 Type: files; Name: "{app}\InstallInfo.ini"
 
 
-[Messages]
-;Message for the "Read to install" wizard page
-;"Ready To Install"
-;WizardReady=
-
-;"Setup is now ready to begin installing ...."
-ReadyLabel1=
-;"Click Install to continue with the installation" 
-ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
-;%n%nClick Install to continue.
 
 
 [Code]
