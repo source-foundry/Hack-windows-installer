@@ -12,8 +12,8 @@ This installer addresses most of these issues. A (not complete) list of things t
 
 ## Usage
 
-- Download HackWindowsInstaller.exe from [Releases](https://github.com/source-foundry/Hack-windows-installer/releases/latest)
-- Double click HackWindowsInstaller.exe
+- Download `HackWindowsInstaller.exe` from [Releases](https://github.com/source-foundry/Hack-windows-installer/releases/latest)
+- Double click `HackWindowsInstaller.exe`
 - Follow the installation instructions
 
 
