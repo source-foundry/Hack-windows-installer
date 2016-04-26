@@ -1,4 +1,4 @@
-# Hack Font Installer for Windows
+# Hack Windows Installer
 
 A Windows installer for the [Hack](https://github.com/chrissimpkins/Hack) typeface.
 
