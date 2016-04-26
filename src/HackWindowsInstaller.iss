@@ -18,13 +18,13 @@
 //#define DEBUG
 
 //Update this when releasing a new version
-#define public Version '1.0.2'
+#define public Version '1.1.0'
 
 //This defines in which sub folder of this project the current files are located
-#define public HackMonospaced_Sourcefolder 'Hack_v2_019'
+#define public HackMonospaced_Sourcefolder 'Hack_v2_020'
 
 //This definies the version of Hack monospaces
-#define public HackMonospaced_Version '2.019'
+#define public HackMonospaced_Version '2.020'
 
 
 
