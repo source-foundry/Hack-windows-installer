@@ -14,9 +14,6 @@
 
 
 
-//Disable the following line when releasing the setup
-//#define DEBUG
-
 //Update this when releasing a new version
 #define public Version '1.1.0'
 
@@ -28,7 +25,6 @@
 
 
 
-
 //--------------------------------------------------------------------
 //Get the base path of this setup. It is assumed that is located in a folder named "src" and the base path is the folder above it
 #define base_path StringChange(SourcePath,'src\','') 
@@ -37,8 +33,8 @@
 //Name of this setup
 #define public AppName 'Hack Windows Installer'
 
-//URL of the project homepage of the FONT 
-#define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/' /*'https://github.com/chrissimpkins/Hack'*/
+//URL of the project homepage for the FONT 
+#define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/'       /*'https://github.com/chrissimpkins/Hack'*/
 
 //URL of the installer homepage
 #define public Installer_Homepage 'https://github.com/source-foundry/Hack-windows-installer'
@@ -52,13 +48,10 @@
 #define public FontCache30Service 'FontCache3.0.0.0'
 
 
-
-
 //Total number of font entries we have
 #define total_fonts 4
-//--------------------------
 
-
+//Define font array
 #dim public font_source[total_fonts]
 #dim public font_file[total_fonts]
 #dim public font_name[total_fonts]
@@ -66,7 +59,7 @@
 //Counter for array
 #define cntr 0
 
-
+//---------------------------------------------------------
 
 #define font_source[cntr] HackMonospaced_Sourcefolder
 #define font_file[cntr] 'Hack-Bold.ttf'
@@ -87,8 +80,6 @@
 #define font_file[cntr] 'Hack-Italic.ttf'
 #define font_name[cntr] 'Hack Italic'
 #define cntr cntr+1
-
-
 
 //---------------------------------------------------------
 
@@ -147,6 +138,10 @@ SetupIconFile=img\Hack-installer-icon.ico
 ;This icon will be displayed in Add/Remove programs and needs to be installed locally
 UninstallDisplayIcon={app}\Hack-installer-icon.ico
 
+;Folder configuration
+SourceDir={#base_path}
+OutputDir=out\
+OutputBaseFilename=HackWindowsInstaller
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
@@ -162,12 +157,7 @@ ArchitecturesInstallIn64BitMode=x64
 ;Only allow the installer to run on Windows 7 and upwards
 MinVersion=6.1
 
-;Folder configuration
-SourceDir={#base_path}
-OutputDir=out\
-OutputBaseFilename=HackWindowsInstaller
-
-;the file should be uninstallable
+;It should be uninstallable
 Uninstallable=Yes 
 
 Compression=lzma2/ultra
@@ -192,9 +182,9 @@ SetupWindowTitle={#AppName} {#Version}
 ;Message for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
   ;WizardReady=
-;"Setup is now ready to begin installing ...."
+;ReadLabel1: "Setup is now ready to begin installing ...."
 ReadyLabel1=
-;"Click Install to continue with the installation" 
+;ReadyLabel2b: "Click Install to continue with the installation" 
 ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
 
 
@@ -203,7 +193,7 @@ ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Vers
 [Icons]
 Name: "{app}\Fonts Applet"; Filename: "control.exe"; Parameters: "/name Microsoft.Fonts"; WorkingDir: "{win}";
 
-;The links to the homepage are only created if the user has selected the matching component
+;Link to the Hack homepage 
 Name: "{app}\Hack Homepage"; Filename: "{#HackMonospaced_Homepage}"; 
 
 
@@ -227,7 +217,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
 
-;Helper macro to add something to a filename before the extension
+;Helper macro to add a string at the end oof filename, but before the extension
 #define public AddStringToEndOfFilename(str fileName, str whatToAdd) \
   StringChange(fileName, '.'+ExtractFileExt(filename), whatToAdd + '.' + ExtractFileExt(fileName))
 
@@ -241,7 +231,6 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;Hack version 2.10 has used "Oblique" instead of "Italic" so these files should be deleted when hack is selected
 Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
 Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
-
 
 
  
@@ -456,13 +445,13 @@ begin
 end;
 
 
-//Prepare FontFiles and FontFilesHashes arrays
+//Prepare FontFiles* arrays
 procedure FillFontDataArray();
 begin
 
-//Helper macro to generate a pascal script function call with the font filename and the SHA1 hash 
-#define public AddFontDataMacro(str fileName, strFontName, str SHA1Hash) \
-  '  AddFontData(''' + fileName + ''', ''' + strFontName + ''', ''' + SHA1Hash + ''');'
+//Helper macro to generate a pascal script function call with the font filename, name and SHA1 hash 
+#define public AddFontDataMacro(str fileName, str FontName, str SHA1Hash) \
+  '  AddFontData(''' + fileName + ''', ''' + FontName + ''', ''' + SHA1Hash + ''');'
 
 //Generate AddFontData(....) calls
 #define public i 0  
@@ -488,7 +477,7 @@ begin
   //Fill font data arrays
   FillFontDataArray;
 
-  //Prepare the custom PrepareToInstall wizard page
+  //Prepare the custom PrepareToInstall wizard page where we show the progress of the service start/stop
   title:=SetupMessage(msgWizardPreparing);
   subTitle:=SetupMessage(msgPreparingDesc);
   
@@ -646,7 +635,7 @@ var
   currentFontFileNameWindows:string;
  
 begin
-  log('---BeforeInstallAction---');
+  log('---BeforeInstallAction START---');
 
   customPrepareToInstall.SetProgress(0, 0);
   customPrepareToInstall.Show;
@@ -720,7 +709,7 @@ end;
 //Show a custom prepare to install page in order to give the user output what we are doing
 procedure AfterInstallAction();
 begin
-  log('---AfterInstallAction---');
+  log('---AfterInstallAction START---');
 
   customPrepareToInstall.SetProgress(0, 0);
   customPrepareToInstall.Show;

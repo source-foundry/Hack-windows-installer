@@ -18,15 +18,7 @@
 
 
 
-
-
 ; ISPP: Base Path C:\dev\git\Hack-windows-installer\
-
-
-
-
-
-
 
 
 
@@ -92,6 +84,10 @@ SetupIconFile=img\Hack-installer-icon.ico
 ;This icon will be displayed in Add/Remove programs and needs to be installed locally
 UninstallDisplayIcon={app}\Hack-installer-icon.ico
 
+;Folder configuration
+SourceDir=C:\dev\git\Hack-windows-installer\
+OutputDir=out\
+OutputBaseFilename=HackWindowsInstaller
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
@@ -107,12 +103,7 @@ ArchitecturesInstallIn64BitMode=x64
 ;Only allow the installer to run on Windows 7 and upwards
 MinVersion=6.1
 
-;Folder configuration
-SourceDir=C:\dev\git\Hack-windows-installer\
-OutputDir=out\
-OutputBaseFilename=HackWindowsInstaller
-
-;the file should be uninstallable
+;It should be uninstallable
 Uninstallable=Yes 
 
 Compression=lzma2/ultra
@@ -137,9 +128,9 @@ SetupWindowTitle=Hack Windows Installer 1.1.0
 ;Message for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
   ;WizardReady=
-;"Setup is now ready to begin installing ...."
+;ReadLabel1: "Setup is now ready to begin installing ...."
 ReadyLabel1=
-;"Click Install to continue with the installation" 
+;ReadyLabel2b: "Click Install to continue with the installation" 
 ReadyLabel2b=Setup is now ready to install the Hack fonts v2.020 on your system.
 
 
@@ -148,7 +139,7 @@ ReadyLabel2b=Setup is now ready to install the Hack fonts v2.020 on your system.
 [Icons]
 Name: "{app}\Fonts Applet"; Filename: "control.exe"; Parameters: "/name Microsoft.Fonts"; WorkingDir: "{win}";
 
-;The links to the homepage are only created if the user has selected the matching component
+;Link to the Hack homepage 
 Name: "{app}\Hack Homepage"; Filename: "http://sourcefoundry.org/hack/"; 
 
 
@@ -170,7 +161,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
 
-;Helper macro to add something to a filename before the extension
+;Helper macro to add a string at the end oof filename, but before the extension
 
   Type: files; Name: "{fonts}\Hack-Bold_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
@@ -180,7 +171,6 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;Hack version 2.10 has used "Oblique" instead of "Italic" so these files should be deleted when hack is selected
 Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
 Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
-
 
 
  
@@ -546,7 +536,7 @@ var
   currentFontFileNameWindows:string;
  
 begin
-  log('---BeforeInstallAction---');
+  log('---BeforeInstallAction START---');
 
   customPrepareToInstall.SetProgress(0, 0);
   customPrepareToInstall.Show;
@@ -612,7 +602,7 @@ end;
 
 procedure AfterInstallAction();
 begin
-  log('---AfterInstallAction---');
+  log('---AfterInstallAction START---');
 
   customPrepareToInstall.SetProgress(0, 0);
   customPrepareToInstall.Show;
