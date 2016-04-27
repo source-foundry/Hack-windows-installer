@@ -15,7 +15,7 @@
 
 
 //Update this when releasing a new version
-#define public Version '1.1.0'
+#define public Version '1.1.2'
 
 //This defines in which sub folder of this project the current files are located
 #define public HackMonospaced_Sourcefolder 'Hack_v2_020'
@@ -46,6 +46,11 @@
 //Internal names of the services 
 #define public FontCacheService 'FontCache'
 #define public FontCache30Service 'FontCache3.0.0.0'
+
+//File name of the FontState Log
+#define public LogFontDataFilename 'Log-FontData.txt'
+#define public LogFontDataFilenameOld 'Log-FontData-old.txt'
+
 
 
 //Total number of font entries we have
@@ -240,8 +245,10 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "{#V
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#AppName}"
 
 [UninstallDelete]
-;Delete Install Info
+;Delete install Info
 Type: files; Name: "{app}\InstallInfo.ini"
+;Delete log files
+Type: files; Name: "{app}\Log*.txt"
 
 
 
@@ -292,7 +299,7 @@ const
   
 var
   //Custom "prepare to install" page
-  customPrepareToInstall: TOutputProgressWizardPage;
+  customProgressPage: TOutputProgressWizardPage;
 
   //All font files included in this setup
   FontFiles: array of string;
@@ -313,6 +320,9 @@ var
 
   //If this true we will make changes to this system
   ChangesRequired:boolean;
+
+  //In memory buffer for the "Font" messages written to the special log file ({#LogFontDataFilename})
+  FontStateBuffer: array of string;
 
 
 // #######################################################################################
@@ -463,6 +473,20 @@ begin
 
 end;
 
+//Logs to the internal buffer which will then be written to the installation folder at the end of the setup
+procedure LogAsImportant(message:string);
+var
+  curSize: integer;
+begin
+  //Always write the message to the "normal" log as well
+
+  log(message);
+
+  curSize:=GetArrayLength(FontStateBuffer);  
+  SetArrayLength(FontStateBuffer, curSize+1); 
+  FontStateBuffer[curSize]:=message;
+end;
+
 
 procedure InitializeWizard;
 var
@@ -483,7 +507,7 @@ begin
   
   //subTitle contains [name] which we need to replace 
   StringChangeEx(subTitle, '[name]', '{#AppName}', True);
-  customPrepareToInstall:=CreateOutputProgressPage(title, subTitle);
+  customProgressPage:=CreateOutputProgressPage(title, subTitle);
 end;
 
 
@@ -510,8 +534,9 @@ var
   i:integer;
   entryFound:boolean;
   registryFontValue:string;
+  expectedFontValue:string;
 begin
-  log('IsSetupFontSameAsInstalledFont(): ' + fileName);
+  LogAsImportant('IsSetupFontSameAsInstalledFont(): ' + fileName);
 
   result:=false;
   entryFound:=false;
@@ -522,21 +547,27 @@ begin
       if FontFiles[i]=fileName then begin         
          entryFound:=true;                  
 
+         //If the hash of the file does not match the font installed, the registry check is not required since we need to install it anyway
          if FontFilesHashes[i]=InstalledFontsHashes[i] then begin                 
+            expectedFontValue:=FontFilesNames[i]+' (TrueType)';
+            LogAsImportant('   Hash matches, checking for registry value: ' + expectedFontValue);
+
             //Now check if the font registration info in the registry also matches
-            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', FontFilesNames[i]+' (TrueType)', registryFontValue) then begin               
+            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin               
                //Does the value point to the same file as we have in setup?
                if registryFontValue=fileName then begin                  
+                  LogAsImportant('   Registry data matches, installation not required');
                   result:=true; //all is exactly as expected
-               end else begin
-                  log('   File name in registry is different, installation required');                  
+               end else begin                  
+                  LogAsImportant('   Value found   : ' + registryFontValue);
+                  LogAsImportant('   File name in registry is different, installation required');                  
                end;            
             end else begin
-               log('   Font not found in registry, installation required');
+               LogAsImportant('   Font not found in registry, installation required');
             end;
          end else begin
-            log('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
-            log('   File is different, installation required');
+            LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
+            LogAsImportant('   File is different, installation required');
          end;
 
       end;   
@@ -559,14 +590,15 @@ var
 begin
   result:=false;
 
-  log('Checking for differences between fonts in setup and this system');
+  LogAsImportant('Checking for differences between fonts in setup and this system');
 
   for i := 0 to GetArrayLength(FontFiles)-1 do begin        
      if IsSetupFontSameAsInstalledFont(FontFiles[i]) then begin
         //File is the same, ignore
      end else begin
         //We have a change, installation is required!
-        log('   Found difference for file ' + FontFiles[i]);
+        LogAsImportant('   Found difference for file ' + FontFiles[i]);
+        LogAsImportant('   Installation required.');
 
         //One detected difference is enough to result TRUE
         result:=true;           
@@ -635,24 +667,33 @@ var
   currentFontFileNameWindows:string;
  
 begin
-  log('---BeforeInstallAction START---');
+  LogAsImportant('---BeforeInstallAction START---');
 
-  customPrepareToInstall.SetProgress(0, 0);
-  customPrepareToInstall.Show;
+  //Write system information to log file
+  LogAsImportant('Setup version: {#Version}');
+  LogAsImportant('Font version.: {#HackMonospaced_Version}');
+  LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
+  LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
+  LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
+
+
+
+  customProgressPage.SetProgress(0, 0);
+  customProgressPage.Show;
 
   try
     begin
-
+         
      //Calculate the SHA1 hash for *ALL* fonts we support
-     customPrepareToInstall.SetText('Calculating hashes for fonts already installed...', '');
+     customProgressPage.SetText('Calculating hashes for fonts already installed...', '');
      
      SetArrayLength(InstalledFontsHashes, GetArrayLength(FontFiles));
      
-     log('---HASH CALCULATION---');
+     LogAsImportant('---HASH CALCULATION---');
      for i := 0 to GetArrayLength(FontFiles)-1 do begin
          currentFont:=FontFiles[i];
-         log('Calculating hash for '+currentFont);
-         log('   File from setup: ' +  FontFilesHashes[i]);    
+         LogAsImportant('Calculating hash for '+currentFont);
+         LogAsImportant('   File from setup: ' +  FontFilesHashes[i]);    
          
          currentFontFileNameWindows:=ExpandConstant('{fonts}\'+currentFont);
     
@@ -663,9 +704,9 @@ begin
             InstalledFontsHashes[i]:='-NOT FOUND-';
          end;
      
-         log('   File in \fonts : ' +  InstalledFontsHashes[i]);
+         LogAsImportant('   File in \fonts : ' +  InstalledFontsHashes[i]);
      end;
-     log('----------------------');
+     LogAsImportant('----------------------');
      
      
      //Set it to false by default
@@ -685,10 +726,10 @@ begin
      FontCache30Service_Stopped:=false;
 
      if ChangesRequired=true then begin
-        customPrepareToInstall.SetText('Stopping service {#FontCacheService}...','');
+        customProgressPage.SetText('Stopping service {#FontCacheService}...','');
         FontCacheService_Stopped:=StopNTService2('{#FontCacheService}');
 
-        customPrepareToInstall.SetText('Stopping service {#FontCache30Service}...','');
+        customProgressPage.SetText('Stopping service {#FontCache30Service}...','');
         FontCache30Service_Stopped:=StopNTService2('{#FontCache30Service}')
      end;
 
@@ -697,50 +738,76 @@ begin
     
   end;
   finally
-    customPrepareToInstall.Hide;
+    customProgressPage.Hide;
   end;
 
   BeforeInstallActionWasRun:=true;
-  log('---BeforeInstallAction END---');
+  LogAsImportant('---BeforeInstallAction END---');
 end;
 
 
 
 //Show a custom prepare to install page in order to give the user output what we are doing
 procedure AfterInstallAction();
+var 
+ appDestinationFolder:string;
+
 begin
   log('---AfterInstallAction START---');
 
-  customPrepareToInstall.SetProgress(0, 0);
-  customPrepareToInstall.Show;
+  customProgressPage.SetProgress(0, 0);
+  customProgressPage.Show;
 
   try
     begin
 
       //Start the service the before action has stopped
-      customPrepareToInstall.SetText('Starting service {#FontCacheService}...','');
+      customProgressPage.SetText('Starting service {#FontCacheService}...','');
       if FontCacheService_Stopped=true then begin
          StartNTService2('{#FontCacheService}');
          FontCacheService_Stopped:=false;
       end;
 
-      customPrepareToInstall.SetText('Starting service {#FontCache30Service}...','');
+      customProgressPage.SetText('Starting service {#FontCache30Service}...','');
       if FontCache30Service_Stopped=true then begin
          StartNTService2('{#FontCache30Service}');         
          FontCache30Service_Stopped:=false;
       end;
 
-
-      //Finally, inform windows that fonts have changed (just to be sure we do this always)
+      //Inform windows that fonts have changed (just to be sure we do this always)
       //See https://msdn.microsoft.com/en-us/library/windows/desktop/dd183326%28v=vs.85%29.aspx
       SendBroadcastMessage(29, 0, 0);
       //HWND_BROADCAST = -1
       //WM_FONTCHANGE = 0x1D = 29
 
-   
+      customProgressPage.SetText('Storing font data...','');
+
+      //Write the buffer to disk. We better make sure that {app} exists.
+      appDestinationFolder:=ExpandConstant('{app}');
+      appDestinationFolder:=AddBackslash(appDestinationFolder);
+      if DirExists(appDestinationFolder) then begin
+         
+         //Check if there is already a current log. If so, rename it. 
+         If FileExists(appDestinationFolder + '{#LogFontDataFilename}') then begin
+            
+            //Check if and "old" file already exists. If so, delete it. 
+            If FileExists(appDestinationFolder + '{#LogFontDataFilenameOld}') then begin
+               DeleteFile(appDestinationFolder + '{#LogFontDataFilenameOld}');
+            end;
+
+            //Rename current file to old
+            RenameFile(appDestinationFolder + '{#LogFontDataFilename}', appDestinationFolder + '{#LogFontDataFilenameOld}'); 
+         end;            
+
+         //Save the buffer 
+         log('Saving font state to ' + appDestinationFolder + '{#LogFontDataFilename}');
+         SaveStringsToFile(appDestinationFolder + '{#LogFontDataFilename}', FontStateBuffer, false); //do not append 
+      end;
+
+
   end;
   finally
-    customPrepareToInstall.Hide;
+    customProgressPage.Hide;
   end;
 
   log('---AfterInstallAction END---');
@@ -755,7 +822,7 @@ begin
  
   log('---NeedRestart---');
   if ChangesRequired then
-     log('  Changes detected, require reboot');
+     LogAsImportant('  Changes detected, require reboot');
 
   result:=ChangesRequired;
     

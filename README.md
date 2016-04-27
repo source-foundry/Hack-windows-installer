@@ -36,7 +36,7 @@ To remove it silently:
 
 ## Troubleshooting
 
-The installer creates a log file on the path `C:\Users\(Username)\AppData\Local\Temp\Setup Log (Year-Month-Day) #XXX.txt`.
+The installer creates a log file on the path `C:\Users\ (Username) \AppData\Local\Temp\Setup Log (Year-Month-Day) #XXX.txt` with full information, as well as `C:\Program Files\Hack Windows Installer\Log-FontData.txt`. The later only contains a subset of the first. 
 
 If you are using EMET: If the "Only trusted fonts" option is activated, you need to declare Hack as trusted or it will not be usable.
 
@@ -45,14 +45,12 @@ If you are using EMET: If the "Only trusted fonts" option is activated, you need
 
 Any constructive contribution is very welcome! 
 
-In order to fix a bug you have encountered, we require the log file from the installer. To view this log file, do the following:
+In order to fix a bug you have encountered, we require the log file. To view this log file, do the following:
 
-- Click Start -> Click Run -> Enter *%temp%* to open your TEMP folder
-- Locate the file called Setup Log 2016-04-26 #xxx.txt where XXX should be 001
-- Double-click it and look into it to make sure it's the setup log from our installer. In the third line it should say *HackWindowsInstaller.exe*
-- Check the file for any information that you do not want others to see. For example, line 3,4 and 10 contain the paths where the setup is started from and how your TEMP folder is called. Just delete these lines. The other lines should be safe and only contain common information.
-- Open a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new) in the Hack-Windows-Installer repository
-- Paste the entire text (minus the lines noted above) there 
+- Open the folder `C:\Program Files\Hack Windows Installer`
+- Locate the file called `Log-FontData.txt`
+- Open a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new)
+- Paste the entire text of the log file  
 
 
 ## License

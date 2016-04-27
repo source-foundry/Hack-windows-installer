@@ -37,6 +37,8 @@
 
 
 
+
+
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
 
@@ -70,8 +72,8 @@ AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_SetupMutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.1.0
-VersionInfoVersion=1.1.0
+AppVersion=1.1.2
+VersionInfoVersion=1.1.2
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
@@ -123,7 +125,7 @@ AllowCancelDuringInstall=False
 ;SetupAppTitle is displayed in the taskbar
 SetupAppTitle=Hack Windows Installer
 ;SetupWindowsTitle is displayed in the setup window itself so better include the version
-SetupWindowTitle=Hack Windows Installer 1.1.0
+SetupWindowTitle=Hack Windows Installer 1.1.2
 
 ;Message for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -176,12 +178,14 @@ Type: files; Name: "{fonts}\Hack-RegularOblique.ttf";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.1.0"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.1.2"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
-;Delete Install Info
+;Delete install Info
 Type: files; Name: "{app}\InstallInfo.ini"
+;Delete log files
+Type: files; Name: "{app}\Log*.txt"
 
 
 
@@ -231,7 +235,7 @@ const
 
   
 var
-  customPrepareToInstall: TOutputProgressWizardPage;
+  customProgressPage: TOutputProgressWizardPage;
 
   FontFiles: array of string;
   FontFilesHashes: array of string;
@@ -245,6 +249,8 @@ var
   BeforeInstallActionWasRun:boolean;
 
   ChangesRequired:boolean;
+
+  FontStateBuffer: array of string;
 
 
 function OpenSCManager(lpMachineName, lpDatabaseName: string; dwDesiredAccess :cardinal): HANDLE;
@@ -384,6 +390,18 @@ begin
 
 end;
 
+procedure LogAsImportant(message:string);
+var
+  curSize: integer;
+begin
+
+  log(message);
+
+  curSize:=GetArrayLength(FontStateBuffer);  
+  SetArrayLength(FontStateBuffer, curSize+1); 
+  FontStateBuffer[curSize]:=message;
+end;
+
 
 procedure InitializeWizard;
 var
@@ -401,7 +419,7 @@ begin
   subTitle:=SetupMessage(msgPreparingDesc);
   
   StringChangeEx(subTitle, '[name]', 'Hack Windows Installer', True);
-  customPrepareToInstall:=CreateOutputProgressPage(title, subTitle);
+  customProgressPage:=CreateOutputProgressPage(title, subTitle);
 end;
 
 
@@ -425,8 +443,9 @@ var
   i:integer;
   entryFound:boolean;
   registryFontValue:string;
+  expectedFontValue:string;
 begin
-  log('IsSetupFontSameAsInstalledFont(): ' + fileName);
+  LogAsImportant('IsSetupFontSameAsInstalledFont(): ' + fileName);
 
   result:=false;
   entryFound:=false;
@@ -437,18 +456,23 @@ begin
          entryFound:=true;                  
 
          if FontFilesHashes[i]=InstalledFontsHashes[i] then begin                 
-            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', FontFilesNames[i]+' (TrueType)', registryFontValue) then begin               
+            expectedFontValue:=FontFilesNames[i]+' (TrueType)';
+            LogAsImportant('   Hash matches, checking for registry value: ' + expectedFontValue);
+
+            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin               
                if registryFontValue=fileName then begin                  
+                  LogAsImportant('   Registry data matches, installation not required');
                   result:=true; //all is exactly as expected
-               end else begin
-                  log('   File name in registry is different, installation required');                  
+               end else begin                  
+                  LogAsImportant('   Value found   : ' + registryFontValue);
+                  LogAsImportant('   File name in registry is different, installation required');                  
                end;            
             end else begin
-               log('   Font not found in registry, installation required');
+               LogAsImportant('   Font not found in registry, installation required');
             end;
          end else begin
-            log('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
-            log('   File is different, installation required');
+            LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
+            LogAsImportant('   File is different, installation required');
          end;
 
       end;   
@@ -469,12 +493,13 @@ var
 begin
   result:=false;
 
-  log('Checking for differences between fonts in setup and this system');
+  LogAsImportant('Checking for differences between fonts in setup and this system');
 
   for i := 0 to GetArrayLength(FontFiles)-1 do begin        
      if IsSetupFontSameAsInstalledFont(FontFiles[i]) then begin
      end else begin
-        log('   Found difference for file ' + FontFiles[i]);
+        LogAsImportant('   Found difference for file ' + FontFiles[i]);
+        LogAsImportant('   Installation required.');
 
         result:=true;           
         break;
@@ -536,23 +561,31 @@ var
   currentFontFileNameWindows:string;
  
 begin
-  log('---BeforeInstallAction START---');
+  LogAsImportant('---BeforeInstallAction START---');
 
-  customPrepareToInstall.SetProgress(0, 0);
-  customPrepareToInstall.Show;
+  LogAsImportant('Setup version: 1.1.2');
+  LogAsImportant('Font version.: 2.020');
+  LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
+  LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
+  LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
+
+
+
+  customProgressPage.SetProgress(0, 0);
+  customProgressPage.Show;
 
   try
     begin
-
-     customPrepareToInstall.SetText('Calculating hashes for fonts already installed...', '');
+         
+     customProgressPage.SetText('Calculating hashes for fonts already installed...', '');
      
      SetArrayLength(InstalledFontsHashes, GetArrayLength(FontFiles));
      
-     log('---HASH CALCULATION---');
+     LogAsImportant('---HASH CALCULATION---');
      for i := 0 to GetArrayLength(FontFiles)-1 do begin
          currentFont:=FontFiles[i];
-         log('Calculating hash for '+currentFont);
-         log('   File from setup: ' +  FontFilesHashes[i]);    
+         LogAsImportant('Calculating hash for '+currentFont);
+         LogAsImportant('   File from setup: ' +  FontFilesHashes[i]);    
          
          currentFontFileNameWindows:=ExpandConstant('{fonts}\'+currentFont);
     
@@ -562,9 +595,9 @@ begin
             InstalledFontsHashes[i]:='-NOT FOUND-';
          end;
      
-         log('   File in \fonts : ' +  InstalledFontsHashes[i]);
+         LogAsImportant('   File in \fonts : ' +  InstalledFontsHashes[i]);
      end;
-     log('----------------------');
+     LogAsImportant('----------------------');
      
      
      ChangesRequired:=false;
@@ -579,10 +612,10 @@ begin
      FontCache30Service_Stopped:=false;
 
      if ChangesRequired=true then begin
-        customPrepareToInstall.SetText('Stopping service FontCache...','');
+        customProgressPage.SetText('Stopping service FontCache...','');
         FontCacheService_Stopped:=StopNTService2('FontCache');
 
-        customPrepareToInstall.SetText('Stopping service FontCache3.0.0.0...','');
+        customProgressPage.SetText('Stopping service FontCache3.0.0.0...','');
         FontCache30Service_Stopped:=StopNTService2('FontCache3.0.0.0')
      end;
 
@@ -591,44 +624,65 @@ begin
     
   end;
   finally
-    customPrepareToInstall.Hide;
+    customProgressPage.Hide;
   end;
 
   BeforeInstallActionWasRun:=true;
-  log('---BeforeInstallAction END---');
+  LogAsImportant('---BeforeInstallAction END---');
 end;
 
 
 
 procedure AfterInstallAction();
+var 
+ appDestinationFolder:string;
+
 begin
   log('---AfterInstallAction START---');
 
-  customPrepareToInstall.SetProgress(0, 0);
-  customPrepareToInstall.Show;
+  customProgressPage.SetProgress(0, 0);
+  customProgressPage.Show;
 
   try
     begin
 
-      customPrepareToInstall.SetText('Starting service FontCache...','');
+      customProgressPage.SetText('Starting service FontCache...','');
       if FontCacheService_Stopped=true then begin
          StartNTService2('FontCache');
          FontCacheService_Stopped:=false;
       end;
 
-      customPrepareToInstall.SetText('Starting service FontCache3.0.0.0...','');
+      customProgressPage.SetText('Starting service FontCache3.0.0.0...','');
       if FontCache30Service_Stopped=true then begin
          StartNTService2('FontCache3.0.0.0');         
          FontCache30Service_Stopped:=false;
       end;
 
-
       SendBroadcastMessage(29, 0, 0);
 
-   
+      customProgressPage.SetText('Storing font data...','');
+
+      appDestinationFolder:=ExpandConstant('{app}');
+      appDestinationFolder:=AddBackslash(appDestinationFolder);
+      if DirExists(appDestinationFolder) then begin
+         
+         If FileExists(appDestinationFolder + 'Log-FontData.txt') then begin
+            
+            If FileExists(appDestinationFolder + 'Log-FontData-old.txt') then begin
+               DeleteFile(appDestinationFolder + 'Log-FontData-old.txt');
+            end;
+
+            RenameFile(appDestinationFolder + 'Log-FontData.txt', appDestinationFolder + 'Log-FontData-old.txt'); 
+         end;            
+
+         log('Saving font state to ' + appDestinationFolder + 'Log-FontData.txt');
+         SaveStringsToFile(appDestinationFolder + 'Log-FontData.txt', FontStateBuffer, false); //do not append 
+      end;
+
+
   end;
   finally
-    customPrepareToInstall.Hide;
+    customProgressPage.Hide;
   end;
 
   log('---AfterInstallAction END---');
@@ -641,7 +695,7 @@ begin
  
   log('---NeedRestart---');
   if ChangesRequired then
-     log('  Changes detected, require reboot');
+     LogAsImportant('  Changes detected, require reboot');
 
   result:=ChangesRequired;
     
