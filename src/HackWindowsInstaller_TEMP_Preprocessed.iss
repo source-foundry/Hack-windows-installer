@@ -72,8 +72,8 @@ AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_SetupMutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.1.2
-VersionInfoVersion=1.1.2
+AppVersion=1.2.0
+VersionInfoVersion=1.2.0
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
@@ -125,7 +125,7 @@ AllowCancelDuringInstall=False
 ;SetupAppTitle is displayed in the taskbar
 SetupAppTitle=Hack Windows Installer
 ;SetupWindowsTitle is displayed in the setup window itself so better include the version
-SetupWindowTitle=Hack Windows Installer 1.1.2
+SetupWindowTitle=Hack Windows Installer 1.2.0
 
 ;Message for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -163,7 +163,8 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
 
-;Helper macro to add a string at the end oof filename, but before the extension
+;Helper macro to add a string at the end of filename, but before the extension
+
 
   Type: files; Name: "{fonts}\Hack-Bold_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
@@ -174,11 +175,23 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
 Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
 
+[Registry]
+;Hack version 2.10 has used "Oblique" instead of "Italic" so if there are any registry value found that use this name, delete them. 
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+
+;Delete any entry found in FontSubsitutes
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold Italic (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Italic (TrueType)"; ValueType: none; Flags: deletevalue;
+
+
 
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.1.2"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.2.0"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
@@ -455,25 +468,32 @@ begin
       if FontFiles[i]=fileName then begin         
          entryFound:=true;                  
 
-         if FontFilesHashes[i]=InstalledFontsHashes[i] then begin                 
-            expectedFontValue:=FontFilesNames[i]+' (TrueType)';
-            LogAsImportant('   Hash matches, checking for registry value: ' + expectedFontValue);
 
-            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin               
-               if registryFontValue=fileName then begin                  
-                  LogAsImportant('   Registry data matches, installation not required');
+         expectedFontValue:=FontFilesNames[i]+' (TrueType)';
+         LogAsImportant('   Checking for font name in registry: ' + expectedFontValue);
+         if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin                                         
+            LogAsImportant('   Font name found');
+
+            LogAsImportant('   Checking for file name in registry. Expected: ' + fileName);
+            if registryFontValue=fileName then begin                  
+               LogAsImportant('   File name matches');
+               
+               if FontFilesHashes[i]=InstalledFontsHashes[i] then begin 
+                  LogAsImportant('   File hash matches, installation not required');
                   result:=true; //all is exactly as expected
-               end else begin                  
-                  LogAsImportant('   Value found   : ' + registryFontValue);
-                  LogAsImportant('   File name in registry is different, installation required');                  
-               end;            
-            end else begin
-               LogAsImportant('   Font not found in registry, installation required');
+               end else begin
+                  LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
+                  LogAsImportant('   File hash is different!');
+               end;
+                                           
+            end else begin                  
+               LogAsImportant('   File name read: ' + registryFontValue);
+               LogAsImportant('   File name in registry is different!');                  
             end;
-         end else begin
-            LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
-            LogAsImportant('   File is different, installation required');
-         end;
+            
+          end else begin
+            LogAsImportant('   Font not found in registry!');          
+          end;
 
       end;   
 
@@ -563,7 +583,7 @@ var
 begin
   LogAsImportant('---BeforeInstallAction START---');
 
-  LogAsImportant('Setup version: 1.1.2');
+  LogAsImportant('Setup version: 1.2.0');
   LogAsImportant('Font version.: 2.020');
   LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));

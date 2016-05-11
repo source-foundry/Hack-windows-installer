@@ -15,7 +15,7 @@
 
 
 //Update this when releasing a new version
-#define public Version '1.1.2'
+#define public Version '1.2.0'
 
 //This defines in which sub folder of this project the current files are located
 #define public HackMonospaced_Sourcefolder 'Hack_v2_020'
@@ -222,9 +222,10 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
 
-;Helper macro to add a string at the end oof filename, but before the extension
+;Helper macro to add a string at the end of filename, but before the extension
 #define public AddStringToEndOfFilename(str fileName, str whatToAdd) \
   StringChange(fileName, '.'+ExtractFileExt(filename), whatToAdd + '.' + ExtractFileExt(fileName))
+
 
 #define public i 0
 #sub Sub_InstallDeleteRemove
@@ -236,6 +237,20 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;Hack version 2.10 has used "Oblique" instead of "Italic" so these files should be deleted when hack is selected
 Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
 Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
+
+[Registry]
+;Hack version 2.10 has used "Oblique" instead of "Italic" so if there are any registry value found that use this name, delete them. 
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+
+;Delete any entry found in FontSubsitutes
+#define public i 0
+#sub Sub_DeleteRegistryFontSubstitutes
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_name[i]} (TrueType)"; ValueType: none; Flags: deletevalue;
+#endsub
+#for {i = 0; i < DimOf(font_file); i++} Sub_DeleteRegistryFontSubstitutes
+#undef i
+
 
 
  
@@ -547,28 +562,36 @@ begin
       if FontFiles[i]=fileName then begin         
          entryFound:=true;                  
 
-         //If the hash of the file does not match the font installed, the registry check is not required since we need to install it anyway
-         if FontFilesHashes[i]=InstalledFontsHashes[i] then begin                 
-            expectedFontValue:=FontFilesNames[i]+' (TrueType)';
-            LogAsImportant('   Hash matches, checking for registry value: ' + expectedFontValue);
+         //For debugging purposes, we first check the registry and than the file hash. 
+         //This allows us to get data in the logfile what the data was before installation.
 
-            //Now check if the font registration info in the registry also matches
-            if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin               
-               //Does the value point to the same file as we have in setup?
-               if registryFontValue=fileName then begin                  
-                  LogAsImportant('   Registry data matches, installation not required');
+         expectedFontValue:=FontFilesNames[i]+' (TrueType)';
+         LogAsImportant('   Checking for font name in registry: ' + expectedFontValue);
+         if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin                                         
+            LogAsImportant('   Font name found');
+
+            LogAsImportant('   Checking for file name in registry. Expected: ' + fileName);
+            //Does the value point to the same file name we expect?
+            if registryFontValue=fileName then begin                  
+               LogAsImportant('   File name matches');
+               
+               //Now check the hash value from setup with the file in \Fonts
+               if FontFilesHashes[i]=InstalledFontsHashes[i] then begin 
+                  LogAsImportant('   File hash matches, installation not required');
                   result:=true; //all is exactly as expected
-               end else begin                  
-                  LogAsImportant('   Value found   : ' + registryFontValue);
-                  LogAsImportant('   File name in registry is different, installation required');                  
-               end;            
-            end else begin
-               LogAsImportant('   Font not found in registry, installation required');
+               end else begin
+                  LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
+                  LogAsImportant('   File hash is different!');
+               end;
+                                           
+            end else begin                  
+               LogAsImportant('   File name read: ' + registryFontValue);
+               LogAsImportant('   File name in registry is different!');                  
             end;
-         end else begin
-            LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
-            LogAsImportant('   File is different, installation required');
-         end;
+            
+          end else begin
+            LogAsImportant('   Font not found in registry!');          
+          end;
 
       end;   
 
