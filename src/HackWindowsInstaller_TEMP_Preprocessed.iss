@@ -72,8 +72,8 @@ AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_SetupMutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.2.0
-VersionInfoVersion=1.2.0
+AppVersion=1.2.1
+VersionInfoVersion=1.2.1
 
 AppPublisher=Michael Hex / Source Foundry
 AppContact=Michael Hex / Source Foundry
@@ -125,7 +125,7 @@ AllowCancelDuringInstall=False
 ;SetupAppTitle is displayed in the taskbar
 SetupAppTitle=Hack Windows Installer
 ;SetupWindowsTitle is displayed in the setup window itself so better include the version
-SetupWindowTitle=Hack Windows Installer 1.2.0
+SetupWindowTitle=Hack Windows Installer 1.2.1
 
 ;Message for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -191,7 +191,7 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueN
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.2.0"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.2.1"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 [UninstallDelete]
@@ -204,6 +204,9 @@ Type: files; Name: "{app}\Log*.txt"
 
 
 [Code]
+
+//--- START incl_ServiceControlManager-definition.iss ---
+
 type
 	SERVICE_STATUS = record
     	dwServiceType				: cardinal;
@@ -216,14 +219,15 @@ type
 	end;
 	HANDLE = cardinal;
 
+	
 const
+	SC_MANAGER_ALL_ACCESS		= $f003f;
 	SERVICE_QUERY_CONFIG		= $1;
 	SERVICE_CHANGE_CONFIG		= $2;
 	SERVICE_QUERY_STATUS		= $4;
 	SERVICE_START				= $10;
 	SERVICE_STOP				= $20;
 	SERVICE_ALL_ACCESS			= $f01ff;
-	SC_MANAGER_ALL_ACCESS		= $f003f;
 	SERVICE_WIN32_OWN_PROCESS	= $10;
 	SERVICE_WIN32_SHARE_PROCESS	= $20;
 	SERVICE_WIN32				= $30;
@@ -245,6 +249,10 @@ const
 	SERVICE_CONTINUE_PENDING    = $5;
 	SERVICE_PAUSE_PENDING       = $6;
 	SERVICE_PAUSED              = $7;
+	
+//--- END incl_ServiceControlManager-definition.iss ---
+	
+
 
   
 var
@@ -266,6 +274,8 @@ var
   FontStateBuffer: array of string;
 
 
+//--- START incl_ServiceControlManager-functions.iss ---
+
 function OpenSCManager(lpMachineName, lpDatabaseName: string; dwDesiredAccess :cardinal): HANDLE;
 external 'OpenSCManagerA@advapi32.dll stdcall';
 
@@ -283,6 +293,7 @@ external 'ControlService@advapi32.dll stdcall';
 
 function QueryServiceStatus(hService :HANDLE;var ServiceStatus :SERVICE_STATUS) : boolean;
 external 'QueryServiceStatus@advapi32.dll stdcall';
+
 
 function OpenServiceManager() : HANDLE;
 begin
@@ -313,8 +324,6 @@ begin
         CloseServiceHandle(hSCM)
 	end
 end;
-
-
 
 function StartService(ServiceName: string) : boolean;
 var
@@ -371,7 +380,34 @@ begin
 	end
 end;
 
+function StartNTService2(serviceName:string):boolean;
+begin
+   if IsServiceInstalled(serviceName) then begin
+      if IsServiceRunning(serviceName)=false then begin
+         log('Starting service ' + serviceName);
+         StartService(serviceName);
+         sleep(1500); //give the service some seconds
+         result:=true;
+      end; 
+   end;
+end;
 
+function StopNTService2(serviceName:string):boolean;
+begin
+   if IsServiceInstalled(serviceName) then begin
+      if IsServiceRunning(serviceName) then begin
+         log('Stopping service ' + serviceName);
+         StopService(serviceName);
+         sleep(1500);
+         result:=true;
+      end; 
+   end;
+end;
+
+
+
+//--- END incl_ServiceControlManager-functions.iss ---
+	
 
 
 
@@ -549,29 +585,6 @@ end;
 
 
 
-function StartNTService2(serviceName:string):boolean;
-begin
-   if IsServiceInstalled(serviceName) then begin
-      if IsServiceRunning(serviceName)=false then begin
-         log('Starting service ' + serviceName);
-         StartService(serviceName);
-         sleep(1500); //give the service some seconds
-         result:=true;
-      end; 
-   end;
-end;
-
-function StopNTService2(serviceName:string):boolean;
-begin
-   if IsServiceInstalled(serviceName) then begin
-      if IsServiceRunning(serviceName) then begin
-         log('Stopping service ' + serviceName);
-         StopService(serviceName);
-         sleep(1500);
-         result:=true;
-      end; 
-   end;
-end;
 
 
 procedure BeforeInstallAction();
@@ -583,7 +596,7 @@ var
 begin
   LogAsImportant('---BeforeInstallAction START---');
 
-  LogAsImportant('Setup version: 1.2.0');
+  LogAsImportant('Setup version: 1.2.1');
   LogAsImportant('Font version.: 2.020');
   LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
