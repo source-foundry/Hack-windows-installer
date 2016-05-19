@@ -8,9 +8,150 @@
   #error A more recent version of Inno Setup is required to compile this script (5.5.8 or newer)
 #endif
 
-#include <ISPPBuiltins.iss>
+//I think this command is no longer needed
+//#include <ISPPBuiltins.iss>
 #pragma option -v+
 #pragma verboselevel 9
+
+
+//-------------------------------------------------
+
+//Get the base path of this project. It is assumed that this .ISS file is located in a folder named "src" and the base path is the folder above it
+#define base_path StringChange(SourcePath,'src\','') 
+#emit '; ISPP Base Path: ' + base_path
+
+
+//The name of the data.ini to be used. Default is data.ini in the same path as this file
+#define public DataIni AddBackslash(SourcePath) + 'Data.ini'
+
+//-------------------------------------------------
+
+//Start processing data from 'DATA.ini'
+#if !FileExists(DataIni)
+    #pragma error 'Data.ini not found'
+#endif
+
+#define public SectionGeneral 'General'
+#define public SectionInstallFonts 'InstallFonts'
+#define public SectionRemoveFonts 'RemoveFonts'
+
+
+//Reads a value from the Data.ini 
+#define public GetDataIniValue(str sectionName, str valueName) \
+        ReadIni(DataIni, sectionName, valueName, '')
+
+//Read a numbered value from Data.ini in the form valueName.Counter e.g. "Font.1"
+#define public GetIniNumberedValue(str sectionName, str valueName, int counter) \
+        GetDataIniValue(sectionName, valueName + '.' + Str(Counter))
+
+
+
+//Process *InstallFonts* section
+#emit '; Processing section ' + SectionInstallFonts
+
+#define install_font_count_string GetDataIniValue(SectionInstallFonts, 'Count')
+//Check value
+#if len(install_font_count_string)==0
+ #pragma error 'Value COUNT count of fonts to be installed is empty'
+#endif
+
+#define font_source_folder GetDataIniValue(SectionInstallFonts, 'Folder')
+//Check value
+#if len(font_source_folder)==0
+ #pragma error 'Source path is empty'
+#endif
+
+
+//Declare the arrays
+#define install_font_count int(install_font_count_string)
+
+#dim public font_files[install_font_count]
+#dim public font_names[install_font_count]
+#dim public font_hashes[install_font_count]
+
+
+//Start looping
+#define public i 0
+
+#sub Sub_ProcessFontSectionEntry
+  //Filename
+  #emit ';  INI position #' +  Str(i+1) 
+  #define cur_file GetIniNumberedValue(SectionInstallFonts, 'File', i+1)
+  #if len(cur_file)==0
+      #pragma error 'Error: Unable to read font file for entry ' + Str(i+1)
+  #endif
+  #emit ';    ' +  cur_file
+  #define public font_files[i] cur_file
+  //Fontname
+  #define cur_name GetIniNumberedValue(SectionInstallFonts, 'Name', i+1)
+  #if len(cur_name)==0
+      #pragma error 'Error: Unable to read font name for entry ' + Str(i+1)
+  #endif
+  #emit ';    ' + cur_name
+  #define public font_names[i] cur_name
+  //Fonthash 
+  #define cur_file_fullpath base_path + AddBackslash(font_source_folder) + cur_file
+  #if !FileExists(cur_file_fullpath)
+    #pragma error 'Font ' +  cur_file_fullpath + ' not found'
+  #endif
+  #define public font_hashes[i] GetSHA1OfFile(cur_file_fullpath)
+  #emit ';    ' + font_hashes[i]
+
+#endsub
+
+//Loop over all font data entries to generate the base arrays for storing font data
+#for {i = 0; i < install_font_count; i++} Sub_ProcessFontSectionEntry
+#undef i
+
+
+
+//Process *RemoveFont* sections
+#emit '; Processing section ' + SectionRemoveFonts
+
+#define remove_font_count_string GetDataIniValue(SectionRemoveFonts, 'Count')
+//Check value
+#if len(remove_font_count_string)==0
+ #pragma error 'Value COUNT of fonts to remove is empty'
+#endif
+
+#define remove_font_count int(remove_font_count_string)
+
+//If remove_font_count is 0, we need to init the arrays with 1 or ISPP will error out
+#define remove_font_array_size remove_font_count
+#if remove_font_array_size==0
+    #define remove_font_array_size 1
+#endif
+
+#dim public remove_font_files[remove_font_array_size]
+#dim public remove_font_names[remove_font_array_size]
+
+
+//Start looping
+#define public i 0
+
+#sub Sub_ProcessRemoveFontSectionEntry
+  //Filename
+  #emit ';  INI position #' +  Str(i+1) 
+  #define cur_file GetIniNumberedValue(SectionRemoveFonts, 'File', i+1)
+  #if len(cur_file)==0
+      #pragma error 'Error: Unable to read font file for entry ' + Str(i+1)
+  #endif
+  #emit ';    ' +  cur_file
+  #define public remove_font_files[i] cur_file
+  //Fontname
+  #define cur_name GetIniNumberedValue(SectionRemoveFonts, 'Name', i+1)
+  #if len(cur_name)==0
+      #pragma error 'Error: Unable to read font name for entry ' + Str(i+1)
+  #endif
+  #emit ';    ' + cur_name
+  #define public remove_font_names[i] cur_name
+
+#endsub
+
+//Loop over all font data entries to generate the base arrays for storing font data
+#for {i = 0; i < remove_font_count; i++} Sub_ProcessRemoveFontSectionEntry
+#undef i
+
 
 
 
@@ -25,10 +166,6 @@
 
 
 
-//--------------------------------------------------------------------
-//Get the base path of this setup. It is assumed that is located in a folder named "src" and the base path is the folder above it
-#define base_path StringChange(SourcePath,'src\','') 
-#emit '; ISPP: Base Path ' + base_path
 
 //Name of this setup
 #define public AppName 'Hack Windows Installer'
@@ -51,10 +188,12 @@
 #define public LogFontDataFilename 'Log-FontData.txt'
 #define public LogFontDataFilenameOld 'Log-FontData-old.txt'
 
+#define public TrueType '(TrueType)'
+
 
 
 //Total number of font entries we have
-#define total_fonts 4
+#define public total_fonts 4
 
 //Define font array
 #dim public font_source[total_fonts]
@@ -66,31 +205,34 @@
 
 //---------------------------------------------------------
 
-#define font_source[cntr] HackMonospaced_Sourcefolder
-#define font_file[cntr] 'Hack-Bold.ttf'
-#define font_name[cntr] 'Hack Bold'
+#define public font_source[cntr] HackMonospaced_Sourcefolder
+#define public font_file[cntr] 'Hack-Bold.ttf'
+#define public font_name[cntr] 'Hack Bold'
 #define cntr cntr+1
 
-#define font_source[cntr] HackMonospaced_Sourcefolder
-#define font_file[cntr] 'Hack-BoldItalic.ttf'
-#define font_name[cntr] 'Hack Bold Italic'
+#define public font_source[cntr] HackMonospaced_Sourcefolder
+#define public font_file[cntr] 'Hack-BoldItalic.ttf'
+#define public font_name[cntr] 'Hack Bold Italic'
 #define cntr cntr+1
 
-#define font_source[cntr] HackMonospaced_Sourcefolder
-#define font_file[cntr] 'Hack-Regular.ttf'
-#define font_name[cntr] 'Hack'    /* Regular is not used by Windows, so we need to remove this from the font name */
+#define public font_source[cntr] HackMonospaced_Sourcefolder
+#define public font_file[cntr] 'Hack-Regular.ttf'
+#define public font_name[cntr] 'Hack'    /* Regular is not used by Windows, so we need to remove this from the font name */
 #define cntr cntr+1
 
-#define font_source[cntr] HackMonospaced_Sourcefolder
-#define font_file[cntr] 'Hack-Italic.ttf'
-#define font_name[cntr] 'Hack Italic'
+#define public font_source[cntr] HackMonospaced_Sourcefolder
+#define public font_file[cntr] 'Hack-Italic.ttf'
+#define public font_name[cntr] 'Hack Italic'
 #define cntr cntr+1
 
-//---------------------------------------------------------
 
-//Helper macro to generate a SHA1 hash for a font file
+//Helper macro to generate a SHA1 hash for a font file at runtime
 #define public GetSHA1OfFontFile(str fontFolder, str fontFile) \
-  GetSHA1OfFile(base_path + 'fonts\' + fontFolder + '\' + fontFile)
+        GetSHA1OfFile(base_path + 'fonts\' + fontFolder + '\' + fontFile)
+
+
+
+
 
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
@@ -218,39 +360,56 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 #undef i
 
 
-[InstallDelete]
-;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
-;These "ghost" files need to be exterminated!
-
 ;Helper macro to add a string at the end of filename, but before the extension
 #define public AddStringToEndOfFilename(str fileName, str whatToAdd) \
   StringChange(fileName, '.'+ExtractFileExt(filename), whatToAdd + '.' + ExtractFileExt(fileName))
 
-
+[InstallDelete]
+;------------------------
+;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, 
+;Windows will simply append "_0" (or _1) to the font file and copy it.
+;These "ghost" files need to be exterminated!
 #define public i 0
-#sub Sub_InstallDeleteRemove
+#sub Sub_InstallDeleteRemoveGhostFiles
   Type: files; Name: "{fonts}\{#AddStringToEndOfFilename(font_file[i], '_*')}"; 
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_InstallDeleteRemove
+#for {i = 0; i < DimOf(font_file); i++} Sub_InstallDeleteRemoveGhostFiles
 #undef i
+;------------------------
 
-;Hack version 2.10 has used "Oblique" instead of "Italic" so these files should be deleted when hack is selected
-Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
-Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
+;------------------------
+;Remove any font files that should be removed during install
+#define public i 0
+#sub Sub_InstallDeleteRemove
+  Type: files; Name: "{fonts}\{#remove_font_files[i]}"; 
+#endsub
+#for {i = 0; i < remove_font_count; i++} Sub_InstallDeleteRemove
+#undef i
+;------------------------
+
+
 
 [Registry]
-;Hack version 2.10 has used "Oblique" instead of "Italic" so if there are any registry value found that use this name, delete them. 
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+;------------------------
+;Remove any font names that should be removed during install
+#define public i 0
+#sub Sub_RegistyDelete
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "{#remove_font_names[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
+#endsub
+#for {i = 0; i < remove_font_count; i++} Sub_RegistyDelete
+#undef i
+;------------------------
 
-;Delete any entry found in FontSubsitutes
+
+;------------------------
+;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
 #define public i 0
 #sub Sub_DeleteRegistryFontSubstitutes
-  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_name[i]} (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_name[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
 #endsub
 #for {i = 0; i < DimOf(font_file); i++} Sub_DeleteRegistryFontSubstitutes
 #undef i
-
+;------------------------
 
 
  
@@ -267,17 +426,15 @@ Type: files; Name: "{app}\Log*.txt"
 
 
 
-
 [Code]
 
 //Include type definition for Service Control Manager
 #include "incl_ServiceControlManager-definition.pas";
 
-
   
 var
   //Custom "prepare to install" page
-  customProgressPage: TOutputProgressWizardPage;
+  //customProgressPage: TOutputProgressWizardPage;
 
   //All font files included in this setup
   FontFiles: array of string;
@@ -358,6 +515,10 @@ begin
   FontStateBuffer[curSize]:=message;
 end;
 
+var
+  //Custom "prepare to install" page
+  customProgressPage: TOutputProgressWizardPage;
+
 
 procedure InitializeWizard;
 var
@@ -426,14 +587,14 @@ begin
          if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin                                         
             LogAsImportant('   Font name found');
 
-            LogAsImportant('   Checking for file name in registry. Expected: ' + fileName);
+            LogAsImportant('   Checking file name in registry. Expected: ' + fileName);
             //Does the value point to the same file name we expect?
             if registryFontValue=fileName then begin                  
                LogAsImportant('   File name matches');
                
                //Now check the hash value from setup with the file in \Fonts
                if FontFilesHashes[i]=InstalledFontsHashes[i] then begin 
-                  LogAsImportant('   File hash matches, installation not required');
+                  LogAsImportant('   File hash matches, installation is not required');
                   result:=true; //all is exactly as expected
                end else begin
                   LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);

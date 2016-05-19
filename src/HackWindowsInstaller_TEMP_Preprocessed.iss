@@ -5,20 +5,93 @@
 
 
 
-; BEGIN ISPPBUILTINS.ISS
-
-
-; END ISPPBUILTINS.ISS
 
 
 
+; ISPP Base Path: C:\dev\git\Hack-windows-installer\
 
 
 
 
 
 
-; ISPP: Base Path C:\dev\git\Hack-windows-installer\
+
+
+
+
+
+; Processing section InstallFonts
+
+
+
+
+
+
+
+
+
+;  INI position #1
+;    Hack-Bold.ttf
+;    Hack Bold
+;    a7bb6faacd609145b55ed15ca238755544c03af5
+
+;  INI position #2
+;    Hack-Regular.ttf
+;    Hack
+;    664cfe2a64de1486c0ace8073ceeb6d9281e8b78
+
+;  INI position #3
+;    Hack-BoldItalic.ttf
+;    Hack Bold Italic
+;    c428004a2fe3570450c6d03442052b1a9989c58b
+
+;  INI position #4
+;    Hack-Italic.ttf
+;    Hack Italic
+;    efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2
+
+
+
+
+; Processing section RemoveFonts
+
+
+
+
+
+
+
+
+;  INI position #1
+;    Hack-BoldOblique.ttf
+;    Hack Bold Oblique
+
+;  INI position #2
+;    Hack-RegularOblique.ttf
+;    Hack Oblique
+
+;  INI position #3
+;    Hack-BoldOblique.otf
+;    Hack Bold Oblique
+
+;  INI position #4
+;    Hack-RegularOblique.otf
+;    Hack Oblique
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -159,33 +232,46 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
   Source: "fonts\Hack_v2_020\Hack-Italic.ttf"; FontInstall: "Hack Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
 
 
-[InstallDelete]
-;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, Windows will simply append "_0" (or _1) to the font file and copy it.
-;These "ghost" files need to be exterminated!
-
 ;Helper macro to add a string at the end of filename, but before the extension
 
-
+[InstallDelete]
+;------------------------
+;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, 
+;Windows will simply append "_0" (or _1) to the font file and copy it.
+;These "ghost" files need to be exterminated!
   Type: files; Name: "{fonts}\Hack-Bold_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-Regular_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-Italic_*.ttf"; 
+;------------------------
 
-;Hack version 2.10 has used "Oblique" instead of "Italic" so these files should be deleted when hack is selected
-Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
-Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
+;------------------------
+;Remove any font files that should be removed during install
+  Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
+  Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
+  Type: files; Name: "{fonts}\Hack-BoldOblique.otf"; 
+  Type: files; Name: "{fonts}\Hack-RegularOblique.otf"; 
+;------------------------
+
+
 
 [Registry]
-;Hack version 2.10 has used "Oblique" instead of "Italic" so if there are any registry value found that use this name, delete them. 
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+;------------------------
+;Remove any font names that should be removed during install
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+;------------------------
 
-;Delete any entry found in FontSubsitutes
+
+;------------------------
+;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold Italic (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Italic (TrueType)"; ValueType: none; Flags: deletevalue;
-
+;------------------------
 
 
  
@@ -199,7 +285,6 @@ Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack W
 Type: files; Name: "{app}\InstallInfo.ini"
 ;Delete log files
 Type: files; Name: "{app}\Log*.txt"
-
 
 
 
@@ -253,10 +338,8 @@ const
 //--- END incl_ServiceControlManager-definition.iss ---
 	
 
-
   
 var
-  customProgressPage: TOutputProgressWizardPage;
 
   FontFiles: array of string;
   FontFilesHashes: array of string;
@@ -451,6 +534,9 @@ begin
   FontStateBuffer[curSize]:=message;
 end;
 
+var
+  customProgressPage: TOutputProgressWizardPage;
+
 
 procedure InitializeWizard;
 var
@@ -510,12 +596,12 @@ begin
          if RegQueryStringValue(HKLM, 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts', expectedFontValue, registryFontValue) then begin                                         
             LogAsImportant('   Font name found');
 
-            LogAsImportant('   Checking for file name in registry. Expected: ' + fileName);
+            LogAsImportant('   Checking file name in registry. Expected: ' + fileName);
             if registryFontValue=fileName then begin                  
                LogAsImportant('   File name matches');
                
                if FontFilesHashes[i]=InstalledFontsHashes[i] then begin 
-                  LogAsImportant('   File hash matches, installation not required');
+                  LogAsImportant('   File hash matches, installation is not required');
                   result:=true; //all is exactly as expected
                end else begin
                   LogAsImportant('   Hash values (Setup/Windows): ' + FontFilesHashes[i] + ' / ' + InstalledFontsHashes[i]);
