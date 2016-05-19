@@ -20,6 +20,9 @@
 
 
 
+
+
+
 ; Processing section InstallFonts
 
 
@@ -27,27 +30,28 @@
 
 
 
-
-
-
 ;  INI position #1
-;    Hack-Bold.ttf
 ;    Hack Bold
+;    Hack-Bold.ttf
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf
 ;    a7bb6faacd609145b55ed15ca238755544c03af5
 
 ;  INI position #2
-;    Hack-Regular.ttf
 ;    Hack
+;    Hack-Regular.ttf
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf
 ;    664cfe2a64de1486c0ace8073ceeb6d9281e8b78
 
 ;  INI position #3
-;    Hack-BoldItalic.ttf
 ;    Hack Bold Italic
+;    Hack-BoldItalic.ttf
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf
 ;    c428004a2fe3570450c6d03442052b1a9989c58b
 
 ;  INI position #4
-;    Hack-Italic.ttf
 ;    Hack Italic
+;    Hack-Italic.ttf
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf
 ;    efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2
 
 
@@ -88,20 +92,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+;#define public AppName 'Hack Windows Installer'
 
 
 
@@ -114,14 +105,13 @@
 
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
-
 ;Because the sub expects a string for each item, an error from ISPP about "Actual datatype not declared type" 
 ;when compiling the setup indicates that total_fonts is set to a wrong value
   
-; Hack_v2_020\Hack-Bold.ttf - "Hack Bold" (a7bb6faacd609145b55ed15ca238755544c03af5)
-; Hack_v2_020\Hack-BoldItalic.ttf - "Hack Bold Italic" (c428004a2fe3570450c6d03442052b1a9989c58b)
-; Hack_v2_020\Hack-Regular.ttf - "Hack" (664cfe2a64de1486c0ace8073ceeb6d9281e8b78)
-; Hack_v2_020\Hack-Italic.ttf - "Hack Italic" (efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2)
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf\Hack-Bold.ttf - "Hack Bold" - a7bb6faacd609145b55ed15ca238755544c03af5
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf\Hack-Regular.ttf - "Hack" - 664cfe2a64de1486c0ace8073ceeb6d9281e8b78
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf\Hack-BoldItalic.ttf - "Hack Bold Italic" - c428004a2fe3570450c6d03442052b1a9989c58b
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf\Hack-Italic.ttf - "Hack Italic" - efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2
 
 ;---END---
 
@@ -129,30 +119,34 @@
 
 
 ;General procedure
-; e) Ready to install
-; d) INSTALL
-; d1) InstallDelete
-; d2) BeforeInstallAction (Stop services)
-; d3) Install files
-; d4) AfterInstallAction (Start services)
-; e) All done
+; a) Ready to install
+; b) INSTALL
+; b1) InstallDelete
+; b2) BeforeInstallAction (Stop services)
+; b3) Install files
+; b4) AfterInstallAction (Start services)
+; c) All done
 
 
   
 
 [Setup]
 AppId=HackWindowsInstaller
-SetupMutex=HackWindowsInstaller_SetupMutex 
+SetupMutex=HackWindowsInstaller_Mutex 
 
 AppName=Hack Windows Installer
 AppVersion=1.2.1
 VersionInfoVersion=1.2.1
 
+;This is displayed on the "Support" dialog of the Add/Remove Programs Control Panel 
 AppPublisher=Michael Hex / Source Foundry
+AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
+
 AppContact=Michael Hex / Source Foundry
 AppSupportURL=https://github.com/source-foundry/Hack-windows-installer
+;AppUpdatesURL=
+
 AppComments=Hack font installer
-AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
 
 ;This icon is used for the icon of HackWindowsInstaller.exe itself
 SetupIconFile=img\Hack-installer-icon.ico
@@ -193,22 +187,23 @@ DisableProgramGroupPage=yes
 AllowCancelDuringInstall=False
 
 
+;Patching default Windows/App text
 [Messages]
-;Default Windows/App text
 ;SetupAppTitle is displayed in the taskbar
 SetupAppTitle=Hack Windows Installer
-;SetupWindowsTitle is displayed in the setup window itself so better include the version
+
+;SetupWindowsTitle is displayed in the setup window itself so we better include the version
 SetupWindowTitle=Hack Windows Installer 1.2.1
 
-;Message for the "Read to install" wizard page
+;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
   ;WizardReady=
+
 ;ReadLabel1: "Setup is now ready to begin installing ...."
 ReadyLabel1=
+
 ;ReadyLabel2b: "Click Install to continue with the installation" 
 ReadyLabel2b=Setup is now ready to install the Hack fonts v2.020 on your system.
-
-
 
 
 [Icons]
@@ -225,23 +220,25 @@ Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
 ;Copy the icon to the installation folder in order to show it in Add/Remove programs
 Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
-;Install fonts
-  Source: "fonts\Hack_v2_020\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "fonts\Hack_v2_020\Hack-BoldItalic.ttf"; FontInstall: "Hack Bold Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "fonts\Hack_v2_020\Hack-Regular.ttf"; FontInstall: "Hack"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "fonts\Hack_v2_020\Hack-Italic.ttf"; FontInstall: "Hack Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+;------------------------
+;Install font files and register them to the registry
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf"; FontInstall: "Hack"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf"; FontInstall: "Hack Bold Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf"; FontInstall: "Hack Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+;------------------------
 
-
-;Helper macro to add a string at the end of filename, but before the extension
 
 [InstallDelete]
+;Helper macro to add a string at the end of filename, but before the extension
+
 ;------------------------
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, 
 ;Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
   Type: files; Name: "{fonts}\Hack-Bold_*.ttf"; 
-  Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-Regular_*.ttf"; 
+  Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
   Type: files; Name: "{fonts}\Hack-Italic_*.ttf"; 
 ;------------------------
 
@@ -254,7 +251,6 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 
-
 [Registry]
 ;------------------------
 ;Remove any font names that should be removed during install
@@ -264,21 +260,20 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
 
-
 ;------------------------
 ;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold (TrueType)"; ValueType: none; Flags: deletevalue;
-  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold Italic (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold Italic (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Italic (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
-
 
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.2.1"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
+
 
 [UninstallDelete]
 ;Delete install Info
@@ -516,8 +511,8 @@ begin
 
 
   AddFontData('Hack-Bold.ttf', 'Hack Bold', 'a7bb6faacd609145b55ed15ca238755544c03af5');
-  AddFontData('Hack-BoldItalic.ttf', 'Hack Bold Italic', 'c428004a2fe3570450c6d03442052b1a9989c58b');
   AddFontData('Hack-Regular.ttf', 'Hack', '664cfe2a64de1486c0ace8073ceeb6d9281e8b78');
+  AddFontData('Hack-BoldItalic.ttf', 'Hack Bold Italic', 'c428004a2fe3570450c6d03442052b1a9989c58b');
   AddFontData('Hack-Italic.ttf', 'Hack Italic', 'efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2');
 
 end;
@@ -556,21 +551,6 @@ begin
   StringChangeEx(subTitle, '[name]', 'Hack Windows Installer', True);
   customProgressPage:=CreateOutputProgressPage(title, subTitle);
 end;
-
-
-{ //Not used right now - See [Messages]
-function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;
-var
- text:string;
-begin
- text:='';
- text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;
- text:=text + NewLine;
- text:=text + 'Click Install to continue.' + NewLine;
-
- result:=text;
-end;
-}
 
 
 function IsSetupFontSameAsInstalledFont(fileName:string):boolean;
@@ -670,9 +650,6 @@ begin
 end;
 
 
-
-
-
 procedure BeforeInstallAction();
 var
   i:integer;
@@ -689,13 +666,11 @@ begin
   LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
 
 
-
   customProgressPage.SetProgress(0, 0);
   customProgressPage.Show;
 
   try
-    begin
-         
+    begin         
      customProgressPage.SetText('Calculating hashes for fonts already installed...', '');
      
      SetArrayLength(InstalledFontsHashes, GetArrayLength(FontFiles));
@@ -721,11 +696,9 @@ begin
      
      ChangesRequired:=false;
 
-
      if AtLeastOneFontRequiresInstallation then begin
         ChangesRequired:=true;
      end;
-
 
      FontCacheService_Stopped:=false;
      FontCache30Service_Stopped:=false;
@@ -738,8 +711,6 @@ begin
         FontCache30Service_Stopped:=StopNTService2('FontCache3.0.0.0')
      end;
 
-
-
     
   end;
   finally
@@ -749,7 +720,6 @@ begin
   BeforeInstallActionWasRun:=true;
   LogAsImportant('---BeforeInstallAction END---');
 end;
-
 
 
 procedure AfterInstallAction();

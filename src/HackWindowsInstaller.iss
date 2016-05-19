@@ -8,8 +8,6 @@
   #error A more recent version of Inno Setup is required to compile this script (5.5.8 or newer)
 #endif
 
-//I think this command is no longer needed
-//#include <ISPPBuiltins.iss>
 #pragma option -v+
 #pragma verboselevel 9
 
@@ -45,6 +43,24 @@
         GetDataIniValue(sectionName, valueName + '.' + Str(Counter))
 
 
+//Retrieve InstallerID
+#define public InstallerID GetDataIniValue('ID', 'InstallerID')
+#if len(InstallerID)==0
+ #pragma error 'InstallerID is empty'
+#endif
+
+//Retrieve source folder        
+#define font_source_folder GetDataIniValue(SectionGeneral, 'Folder')
+#if len(font_source_folder)==0
+ #pragma error 'Source folder is empty'
+#endif
+
+//Retrieve InstallerName
+#define public InstallerName GetDataIniValue(SectionGeneral, 'Name')
+#if len(InstallerName)==0
+ #pragma error 'Name is empty'
+#endif
+
 
 //Process *InstallFonts* section
 #emit '; Processing section ' + SectionInstallFonts
@@ -55,33 +71,18 @@
  #pragma error 'Value COUNT count of fonts to be installed is empty'
 #endif
 
-#define font_source_folder GetDataIniValue(SectionInstallFonts, 'Folder')
-//Check value
-#if len(font_source_folder)==0
- #pragma error 'Source path is empty'
-#endif
-
-
 //Declare the arrays
 #define install_font_count int(install_font_count_string)
 
 #dim public font_files[install_font_count]
 #dim public font_names[install_font_count]
+#dim public font_paths[install_font_count]
 #dim public font_hashes[install_font_count]
 
 
-//Start looping
 #define public i 0
-
 #sub Sub_ProcessFontSectionEntry
-  //Filename
   #emit ';  INI position #' +  Str(i+1) 
-  #define cur_file GetIniNumberedValue(SectionInstallFonts, 'File', i+1)
-  #if len(cur_file)==0
-      #pragma error 'Error: Unable to read font file for entry ' + Str(i+1)
-  #endif
-  #emit ';    ' +  cur_file
-  #define public font_files[i] cur_file
   //Fontname
   #define cur_name GetIniNumberedValue(SectionInstallFonts, 'Name', i+1)
   #if len(cur_name)==0
@@ -89,12 +90,22 @@
   #endif
   #emit ';    ' + cur_name
   #define public font_names[i] cur_name
-  //Fonthash 
-  #define cur_file_fullpath base_path + AddBackslash(font_source_folder) + cur_file
-  #if !FileExists(cur_file_fullpath)
-    #pragma error 'Font ' +  cur_file_fullpath + ' not found'
+  //Filename
+  #define cur_file GetIniNumberedValue(SectionInstallFonts, 'File', i+1)
+  #if len(cur_file)==0
+      #pragma error 'Error: Unable to read font file for entry ' + Str(i+1)
   #endif
-  #define public font_hashes[i] GetSHA1OfFile(cur_file_fullpath)
+  #emit ';    ' +  cur_file
+  #define public font_files[i] cur_file
+  //Fontpath
+  #define cur_fullpath base_path + AddBackslash(font_source_folder) + cur_file
+  #if !FileExists(cur_fullpath)
+    #pragma error 'Font ' +  cur_fullpath + ' not found'
+  #endif
+  #emit ';    ' + cur_fullpath
+  #define public font_paths[i] cur_fullpath
+  //Fonthash 
+  #define public font_hashes[i] GetSHA1OfFile(cur_fullpath)
   #emit ';    ' + font_hashes[i]
 
 #endsub
@@ -158,8 +169,10 @@
 //Update this when releasing a new version
 #define public Version '1.2.1'
 
-//This defines in which sub folder of this project the current files are located
-#define public HackMonospaced_Sourcefolder 'Hack_v2_020'
+//Overwrite the version when an external version is found
+#ifdef External_Version
+ #define public Version External_Version
+#endif 
 
 //This definies the version of Hack monospaces
 #define public HackMonospaced_Version '2.020'
@@ -168,7 +181,7 @@
 
 
 //Name of this setup
-#define public AppName 'Hack Windows Installer'
+;#define public AppName 'Hack Windows Installer'
 
 //URL of the project homepage for the FONT 
 #define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/'       /*'https://github.com/chrissimpkins/Hack'*/
@@ -180,73 +193,31 @@
 #define public Copyright 'Copyright © 2016 Michael Hex / Source Foundry'
 
 
-//Internal names of the services 
+
+//Internal names of the font services 
 #define public FontCacheService 'FontCache'
 #define public FontCache30Service 'FontCache3.0.0.0'
 
-//File name of the FontState Log
+//File name for the FontState Log
 #define public LogFontDataFilename 'Log-FontData.txt'
 #define public LogFontDataFilenameOld 'Log-FontData-old.txt'
 
+//We need this more than once
 #define public TrueType '(TrueType)'
-
-
-
-//Total number of font entries we have
-#define public total_fonts 4
-
-//Define font array
-#dim public font_source[total_fonts]
-#dim public font_file[total_fonts]
-#dim public font_name[total_fonts]
-
-//Counter for array
-#define cntr 0
-
-//---------------------------------------------------------
-
-#define public font_source[cntr] HackMonospaced_Sourcefolder
-#define public font_file[cntr] 'Hack-Bold.ttf'
-#define public font_name[cntr] 'Hack Bold'
-#define cntr cntr+1
-
-#define public font_source[cntr] HackMonospaced_Sourcefolder
-#define public font_file[cntr] 'Hack-BoldItalic.ttf'
-#define public font_name[cntr] 'Hack Bold Italic'
-#define cntr cntr+1
-
-#define public font_source[cntr] HackMonospaced_Sourcefolder
-#define public font_file[cntr] 'Hack-Regular.ttf'
-#define public font_name[cntr] 'Hack'    /* Regular is not used by Windows, so we need to remove this from the font name */
-#define cntr cntr+1
-
-#define public font_source[cntr] HackMonospaced_Sourcefolder
-#define public font_file[cntr] 'Hack-Italic.ttf'
-#define public font_name[cntr] 'Hack Italic'
-#define cntr cntr+1
-
-
-//Helper macro to generate a SHA1 hash for a font file at runtime
-#define public GetSHA1OfFontFile(str fontFolder, str fontFile) \
-        GetSHA1OfFile(base_path + 'fonts\' + fontFolder + '\' + fontFile)
-
-
-
 
 
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
-#define public GetFontDataDebugOutput(str source, str fileName, str fontName) \
-   source + '\' + fileName + ' - "' + fontName + '"'
-
+#define public GetFontDataDebugOutput(str source, str fileName, str fontName, str hash) \
+   source + '\' + fileName + ' - "' + fontName + '" - ' + hash
 ;Because the sub expects a string for each item, an error from ISPP about "Actual datatype not declared type" 
 ;when compiling the setup indicates that total_fonts is set to a wrong value
   
 #define public i 0
 #sub Sub_DebugFontDataOutput
-  #emit '; ' + GetFontDataDebugOutput(font_source[i], font_file[i], font_name[i]) + ' (' + GetSHA1OfFontFile(font_source[i], font_file[i]) + ')'
+  #emit '; ' + GetFontDataDebugOutput(font_paths[i], font_files[i], font_names[i], font_hashes[i])
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_DebugFontDataOutput
+#for {i = 0; i < install_font_count; i++} Sub_DebugFontDataOutput
 #undef i
 
 ;---END---
@@ -255,30 +226,34 @@
 
 
 ;General procedure
-; e) Ready to install
-; d) INSTALL
-; d1) InstallDelete
-; d2) BeforeInstallAction (Stop services)
-; d3) Install files
-; d4) AfterInstallAction (Start services)
-; e) All done
+; a) Ready to install
+; b) INSTALL
+; b1) InstallDelete
+; b2) BeforeInstallAction (Stop services)
+; b3) Install files
+; b4) AfterInstallAction (Start services)
+; c) All done
 
 
   
 
 [Setup]
-AppId=HackWindowsInstaller
-SetupMutex=HackWindowsInstaller_SetupMutex 
+AppId={#InstallerID}
+SetupMutex={#InstallerID}_Mutex 
 
-AppName={#AppName}
+AppName={#InstallerName}
 AppVersion={#Version}
 VersionInfoVersion={#Version}
 
+;This is displayed on the "Support" dialog of the Add/Remove Programs Control Panel 
 AppPublisher=Michael Hex / Source Foundry
+AppCopyright={#Copyright}
+
 AppContact=Michael Hex / Source Foundry
 AppSupportURL={#Installer_Homepage}
+;AppUpdatesURL=
+
 AppComments=Hack font installer
-AppCopyright={#Copyright}
 
 ;This icon is used for the icon of HackWindowsInstaller.exe itself
 SetupIconFile=img\Hack-installer-icon.ico
@@ -319,22 +294,23 @@ DisableProgramGroupPage=yes
 AllowCancelDuringInstall=False
 
 
+;Patching default Windows/App text
 [Messages]
-;Default Windows/App text
 ;SetupAppTitle is displayed in the taskbar
-SetupAppTitle={#AppName}
-;SetupWindowsTitle is displayed in the setup window itself so better include the version
-SetupWindowTitle={#AppName} {#Version}
+SetupAppTitle={#InstallerName}
 
-;Message for the "Read to install" wizard page
+;SetupWindowsTitle is displayed in the setup window itself so we better include the version
+SetupWindowTitle={#InstallerName} {#Version}
+
+;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
   ;WizardReady=
+
 ;ReadLabel1: "Setup is now ready to begin installing ...."
 ReadyLabel1=
+
 ;ReadyLabel2b: "Click Install to continue with the installation" 
 ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
-
-
 
 
 [Icons]
@@ -351,29 +327,31 @@ Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
 ;Copy the icon to the installation folder in order to show it in Add/Remove programs
 Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
-;Install fonts
+;------------------------
+;Install font files and register them to the registry
 #define public i 0
 #sub Sub_FontInstall
-  Source: "fonts\{#font_source[i]}\{#font_file[i]}"; FontInstall: "{#font_name[i]}"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "{#font_paths[i]}"; FontInstall: "{#font_names[i]}"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_FontInstall
+#for {i = 0; i < install_font_count; i++} Sub_FontInstall
 #undef i
+;------------------------
 
 
+[InstallDelete]
 ;Helper macro to add a string at the end of filename, but before the extension
 #define public AddStringToEndOfFilename(str fileName, str whatToAdd) \
   StringChange(fileName, '.'+ExtractFileExt(filename), whatToAdd + '.' + ExtractFileExt(fileName))
 
-[InstallDelete]
 ;------------------------
 ;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, 
 ;Windows will simply append "_0" (or _1) to the font file and copy it.
 ;These "ghost" files need to be exterminated!
 #define public i 0
 #sub Sub_InstallDeleteRemoveGhostFiles
-  Type: files; Name: "{fonts}\{#AddStringToEndOfFilename(font_file[i], '_*')}"; 
+  Type: files; Name: "{fonts}\{#AddStringToEndOfFilename(font_files[i], '_*')}"; 
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_InstallDeleteRemoveGhostFiles
+#for {i = 0; i < install_font_count; i++} Sub_InstallDeleteRemoveGhostFiles
 #undef i
 ;------------------------
 
@@ -388,7 +366,6 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 
-
 [Registry]
 ;------------------------
 ;Remove any font names that should be removed during install
@@ -400,23 +377,22 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 #undef i
 ;------------------------
 
-
 ;------------------------
 ;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
 #define public i 0
 #sub Sub_DeleteRegistryFontSubstitutes
-  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_name[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_names[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_DeleteRegistryFontSubstitutes
+#for {i = 0; i < install_font_count; i++} Sub_DeleteRegistryFontSubstitutes
 #undef i
 ;------------------------
-
 
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "{#Version}"
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#AppName}"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "{#InstallerName}"
+
 
 [UninstallDelete]
 ;Delete install Info
@@ -488,15 +464,15 @@ procedure FillFontDataArray();
 begin
 
 //Helper macro to generate a pascal script function call with the font filename, name and SHA1 hash 
-#define public AddFontDataMacro(str fileName, str FontName, str SHA1Hash) \
-  '  AddFontData(''' + fileName + ''', ''' + FontName + ''', ''' + SHA1Hash + ''');'
+#define public AddFontDataMacro(str fileName, str fontName, str hash) \
+  '  AddFontData(''' + fileName + ''', ''' + fontName + ''', ''' + hash + ''');'
 
 //Generate AddFontData(....) calls
 #define public i 0  
 #sub Sub_FontDataGenerateHash
- #emit  AddFontDataMacro(font_file[i], font_name[i], GetSHA1OfFontFile(font_source[i], font_file[i])) 
+ #emit  AddFontDataMacro(font_files[i], font_names[i], font_hashes[i]) 
 #endsub
-#for {i = 0; i < DimOf(font_file); i++} Sub_FontDataGenerateHash
+#for {i = 0; i < install_font_count; i++} Sub_FontDataGenerateHash
 #undef public i
 
 end;
@@ -538,24 +514,9 @@ begin
   subTitle:=SetupMessage(msgPreparingDesc);
   
   //subTitle contains [name] which we need to replace 
-  StringChangeEx(subTitle, '[name]', '{#AppName}', True);
+  StringChangeEx(subTitle, '[name]', '{#InstallerName}', True);
   customProgressPage:=CreateOutputProgressPage(title, subTitle);
 end;
-
-
-{ //Not used right now - See [Messages]
-function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;
-var
- text:string;
-begin
- text:='';
- text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;
- text:=text + NewLine;
- text:=text + 'Click Install to continue.' + NewLine;
-
- result:=text;
-end;
-}
 
 
 //This function returns TRUE if:
@@ -671,10 +632,7 @@ begin
 end;
 
 
-
-
-
-//Show a custom prepare to install page in order to give the user output what we are doing
+//This function is called just before Inno Setup starts the real installation procedure
 procedure BeforeInstallAction();
 var
   i:integer;
@@ -692,13 +650,12 @@ begin
   LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
 
 
-
+  //Show a custom prepare to install page in order to give the user output what we are doing
   customProgressPage.SetProgress(0, 0);
   customProgressPage.Show;
 
   try
-    begin
-         
+    begin         
      //Calculate the SHA1 hash for *ALL* fonts we support
      customProgressPage.SetText('Calculating hashes for fonts already installed...', '');
      
@@ -727,12 +684,10 @@ begin
      //Set it to false by default
      ChangesRequired:=false;
 
-
      //Now we need to know if we need to install at least one font     
      if AtLeastOneFontRequiresInstallation then begin
         ChangesRequired:=true;
      end;
-
 
      //If at least one file will be installed, we will stop the "Windows Font Cache Service" and the "Windows Presentation Foundation Font Cache".
      //This will ensure that that these services update their internal database
@@ -748,8 +703,6 @@ begin
         FontCache30Service_Stopped:=StopNTService2('{#FontCache30Service}')
      end;
 
-
-
     
   end;
   finally
@@ -761,8 +714,7 @@ begin
 end;
 
 
-
-//Show a custom prepare to install page in order to give the user output what we are doing
+//This function is called once Inno Setup has finished the installation procedure
 procedure AfterInstallAction();
 var 
  appDestinationFolder:string;
@@ -770,6 +722,7 @@ var
 begin
   log('---AfterInstallAction START---');
 
+  //Show a custom prepare to install page in order to give the user output what we are doing
   customProgressPage.SetProgress(0, 0);
   customProgressPage.Show;
 
