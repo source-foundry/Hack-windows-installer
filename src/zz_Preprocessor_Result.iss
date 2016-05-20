@@ -162,9 +162,8 @@ OutputBaseFilename=HackWindowsInstaller
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
-;Dot warn the user when the folder exists
+;Don't warn when the taget folder exists
 DirExistsWarning=no
-
 
  ;This icon is used for the icon of the resulting exe
  SetupIconFile=img\Hack-installer-icon.ico
@@ -172,11 +171,8 @@ DirExistsWarning=no
  ;This icon will be displayed in Add/Remove Programs and needs to be installed locally
  UninstallDisplayIcon={app}\Hack-installer-icon.ico
 
-
-;Source dir is the base path
+;Source folder is the base path
 SourceDir=C:\dev\git\Hack-windows-installer\
-
-
 
 ;Always create a log to aid troubleshooting. The file is created as:  
 ;C:\Users\<YourUsername>\AppData\Local\Temp\Setup Log Year-Month-Day #XXX.txt
@@ -674,7 +670,7 @@ begin
 
   LogAsImportant('--------------------------------');
   LogAsImportant('Font name.....: Hack fonts');
-  LogAsImportant('Script version: 1.08');
+  LogAsImportant('Script version: 2.01');
   LogAsImportant('Setup version.: 1.3.0');
   LogAsImportant('Font version..: 2.020');
   LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
@@ -827,5 +823,18 @@ begin
 end;
 
 
+{ 
+	function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;		
+	var		
+	 text:string;		
+	begin		
+	 text:='';		
+	 text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;		
+	 text:=text + NewLine;		
+	 text:=text + 'Click Install to continue.' + NewLine;		
+			
+	 result:=text;		
+	end;		
+}
 
 

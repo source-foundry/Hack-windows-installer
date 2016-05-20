@@ -256,7 +256,7 @@
 
 //--------------------------------------------------------
 //Version of this installer script. Please do not change.
-#define public ScriptVersion '1.08'
+#define public ScriptVersion '2.01'
 //--------------------------------------------------------
 
 
@@ -321,9 +321,8 @@ OutputBaseFilename={#ExeFile}
 
 ;Target folder settings
 DefaultDirName={pf}\{#AddBackslash(DestinationFolder)}
-;Dot warn the user when the folder exists
+;Don't warn when the taget folder exists
 DirExistsWarning=no
-
 
 #if len(IconFile)>0
  ;This icon is used for the icon of the resulting exe
@@ -333,11 +332,8 @@ DirExistsWarning=no
  UninstallDisplayIcon={app}\{#ExtractFileName(IconFile)}
 #endif
 
-
-;Source dir is the base path
+;Source folder is the base path
 SourceDir={#base_path}
-
-
 
 ;Always create a log to aid troubleshooting. The file is created as:  
 ;C:\Users\<YourUsername>\AppData\Local\Temp\Setup Log Year-Month-Day #XXX.txt
@@ -1079,6 +1075,20 @@ begin
 end;
 
 
+{ 
+  //Not used right now - See [Messages]		
+	function UpdateReadyMemo(Space, NewLine, MemoUserInfoInfo, MemoDirInfo, MemoTypeInfo, MemoComponentsInfo, MemoGroupInfo, MemoTasksInfo: String): String;		
+	var		
+	 text:string;		
+	begin		
+	 text:='';		
+	 text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;		
+	 text:=text + NewLine;		
+	 text:=text + 'Click Install to continue.' + NewLine;		
+			
+	 result:=text;		
+	end;		
+}
 
 
 //Save the result of the preprocessor to a file for review
