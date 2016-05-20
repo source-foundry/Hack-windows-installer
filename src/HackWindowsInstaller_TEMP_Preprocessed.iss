@@ -285,7 +285,6 @@ Type: files; Name: "{app}\Log*.txt"
 
 [Code]
 
-//--- START incl_ServiceControlManager-definition.iss ---
 
 type
 	SERVICE_STATUS = record
@@ -329,30 +328,6 @@ const
 	SERVICE_CONTINUE_PENDING    = $5;
 	SERVICE_PAUSE_PENDING       = $6;
 	SERVICE_PAUSED              = $7;
-	
-//--- END incl_ServiceControlManager-definition.iss ---
-	
-
-  
-var
-
-  FontFiles: array of string;
-  FontFilesHashes: array of string;
-  FontFilesNames: array of string;
-  
-  InstalledFontsHashes: array of string;
-
-  FontCacheService_Stopped:boolean;
-  FontCache30Service_Stopped:boolean;
-
-  BeforeInstallActionWasRun:boolean;
-
-  ChangesRequired:boolean;
-
-  FontStateBuffer: array of string;
-
-
-//--- START incl_ServiceControlManager-functions.iss ---
 
 function OpenSCManager(lpMachineName, lpDatabaseName: string; dwDesiredAccess :cardinal): HANDLE;
 external 'OpenSCManagerA@advapi32.dll stdcall';
@@ -484,8 +459,26 @@ end;
 
 
 
-//--- END incl_ServiceControlManager-functions.iss ---
-	
+  
+var
+
+  FontFiles: array of string;
+  FontFilesHashes: array of string;
+  FontFilesNames: array of string;
+  
+  InstalledFontsHashes: array of string;
+
+  FontCacheService_Stopped:boolean;
+  FontCache30Service_Stopped:boolean;
+
+  BeforeInstallActionWasRun:boolean;
+
+  ChangesRequired:boolean;
+
+  FontStateBuffer: array of string;
+
+
+
 
 
 
