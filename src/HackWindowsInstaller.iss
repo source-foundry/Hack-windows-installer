@@ -20,7 +20,7 @@
 
 
 //The name of the data.ini to be used. Default is data.ini in the same path as this file
-#define public DataIni AddBackslash(SourcePath) + 'Data.ini'
+#define public DataIni AddBackslash(base_path) + 'src\Data.ini'
 
 //-------------------------------------------------
 
@@ -59,6 +59,42 @@
 #define public InstallerName GetDataIniValue(SectionGeneral, 'Name')
 #if len(InstallerName)==0
  #pragma error 'Name is empty'
+#endif
+
+//Version of the SETUP/INSTALLER
+#define public Version GetDataIniValue(SectionGeneral, 'Version')
+#if len(Version)==0
+ #pragma error 'Version is empty'
+#endif
+
+//Overwrite the version when an external version is found
+#ifdef EXTERNAL_VERSION
+ #define public Version EXTERNAL_VERSION
+#endif 
+
+//Version of the font(s)
+#define public FontVersion GetDataIniValue(SectionGeneral, 'FontVersion')
+#if len(FontVersion)==0
+ #pragma error 'FontVersion is empty'
+#endif
+
+//Name of this font
+#define public FontName GetDataIniValue(SectionGeneral, 'FontName')
+#if len(FontName)==0
+ #pragma error 'FontName is empty'
+#endif
+
+
+//Retrieve InstallerName
+#define public Publisher GetDataIniValue(SectionGeneral, 'Publisher')
+#if len(Publisher)==0
+ #pragma error 'Publisher is empty'
+#endif
+
+//Retrieve Copyright information 
+#define public Copyright GetDataIniValue(SectionGeneral, 'Copyright')
+#if len(Copyright)==0
+ #pragma error 'Copyright is empty'
 #endif
 
 
@@ -166,31 +202,14 @@
 
 
 
-//Update this when releasing a new version
-#define public Version '1.2.1'
-
-//Overwrite the version when an external version is found
-#ifdef External_Version
- #define public Version External_Version
-#endif 
-
-//This definies the version of Hack monospaces
-#define public HackMonospaced_Version '2.020'
 
 
-
-
-//Name of this setup
-;#define public AppName 'Hack Windows Installer'
 
 //URL of the project homepage for the FONT 
 #define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/'       /*'https://github.com/chrissimpkins/Hack'*/
 
 //URL of the installer homepage
 #define public Installer_Homepage 'https://github.com/source-foundry/Hack-windows-installer'
-
-//Copyright information 
-#define public Copyright 'Copyright © 2016 Michael Hex / Source Foundry'
 
 
 
@@ -224,7 +243,6 @@
 
 
 
-
 ;General procedure
 ; a) Ready to install
 ; b) INSTALL
@@ -235,33 +253,39 @@
 ; c) All done
 
 
-  
-
 [Setup]
 AppId={#InstallerID}
 SetupMutex={#InstallerID}_Mutex 
 
 AppName={#InstallerName}
+
 AppVersion={#Version}
 VersionInfoVersion={#Version}
 
-;This is displayed on the "Support" dialog of the Add/Remove Programs Control Panel 
-AppPublisher=Michael Hex / Source Foundry
+AppPublisher={#Publisher}
 AppCopyright={#Copyright}
 
-AppContact=Michael Hex / Source Foundry
+;Information displayed in Control Panel -> Add/Remove Programs applet
+;---------------------------------------------------
+;Displayed as "Help link:"
 AppSupportURL={#Installer_Homepage}
-;AppUpdatesURL=
+;Should also be displayed there, but I was unable to verify this
+AppContact={#Publisher}
+;Displayed as "Comments" 
+AppComments={#FontName} v{#FontVersion}
+;Displayed as "Update information:" -NOT USED RIGHT NOW-
+;AppUpdatesURL=http://appupdates.com
+;---------------------------------------------------
 
-AppComments=Hack font installer
 
 ;This icon is used for the icon of HackWindowsInstaller.exe itself
 SetupIconFile=img\Hack-installer-icon.ico
 ;This icon will be displayed in Add/Remove programs and needs to be installed locally
 UninstallDisplayIcon={app}\Hack-installer-icon.ico
 
-;Folder configuration
+;Source dir is the base path
 SourceDir={#base_path}
+;Store resulting exe in the \out folder
 OutputDir=out\
 OutputBaseFilename=HackWindowsInstaller
 
@@ -291,6 +315,8 @@ PrivilegesRequired=admin
 DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
+
+;You can't stop me.
 AllowCancelDuringInstall=False
 
 
@@ -310,7 +336,7 @@ SetupWindowTitle={#InstallerName} {#Version}
 ReadyLabel1=
 
 ;ReadyLabel2b: "Click Install to continue with the installation" 
-ReadyLabel2b=Setup is now ready to install the Hack fonts v{#HackMonospaced_Version} on your system.
+ReadyLabel2b=Setup is now ready to install the {#FontName} v{#FontVersion} on your system.
 
 
 [Icons]
@@ -324,11 +350,11 @@ Name: "{app}\Hack Homepage"; Filename: "{#HackMonospaced_Homepage}";
 ;Copy license files - always copied
 Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
 
-;Copy the icon to the installation folder in order to show it in Add/Remove programs
+;Copy the icon to the installation folder in order to show it in Add/Remove Programs
 Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 ;------------------------
-;Install font files and register them to the registry
+;Install font files and register them
 #define public i 0
 #sub Sub_FontInstall
   Source: "{#font_paths[i]}"; FontInstall: "{#font_names[i]}"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
@@ -356,7 +382,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 ;------------------------
-;Remove any font files that should be removed during install
+;Remove old font files during install
 #define public i 0
 #sub Sub_InstallDeleteRemove
   Type: files; Name: "{fonts}\{#remove_font_files[i]}"; 
@@ -368,7 +394,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 [Registry]
 ;------------------------
-;Remove any font names that should be removed during install
+;Remove old font names during install
 #define public i 0
 #sub Sub_RegistyDelete
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "{#remove_font_names[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
@@ -378,7 +404,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 ;------------------------
-;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
+;Delete any entry found in FontSubsitutes for each of the fonts that will be installed
 #define public i 0
 #sub Sub_DeleteRegistryFontSubstitutes
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "{#font_names[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
@@ -820,8 +846,9 @@ begin
   LogAsImportant('---BeforeInstallAction START---');
 
   //Write system information to log file
+  LogAsImportant('Font name....: {#FontName}');
   LogAsImportant('Setup version: {#Version}');
-  LogAsImportant('Font version.: {#HackMonospaced_Version}');
+  LogAsImportant('Font version.: {#FontVersion}');
   LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
   LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));

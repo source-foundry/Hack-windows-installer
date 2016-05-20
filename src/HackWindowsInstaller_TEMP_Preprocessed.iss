@@ -23,6 +23,13 @@
 
 
 
+
+
+
+
+
+
+
 ; Processing section InstallFonts
 
 
@@ -92,12 +99,6 @@
 
 
 
-;#define public AppName 'Hack Windows Installer'
-
-
-
-
-
 
 
 
@@ -117,7 +118,6 @@
 
 
 
-
 ;General procedure
 ; a) Ready to install
 ; b) INSTALL
@@ -128,33 +128,39 @@
 ; c) All done
 
 
-  
-
 [Setup]
 AppId=HackWindowsInstaller
 SetupMutex=HackWindowsInstaller_Mutex 
 
 AppName=Hack Windows Installer
-AppVersion=1.2.1
-VersionInfoVersion=1.2.1
 
-;This is displayed on the "Support" dialog of the Add/Remove Programs Control Panel 
+AppVersion=1.3.0
+VersionInfoVersion=1.3.0
+
 AppPublisher=Michael Hex / Source Foundry
-AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
+AppCopyright=Copyright Â© 2016 Michael Hex / Source Foundry
 
-AppContact=Michael Hex / Source Foundry
+;Information displayed in Control Panel -> Add/Remove Programs applet
+;---------------------------------------------------
+;Displayed as "Help link:"
 AppSupportURL=https://github.com/source-foundry/Hack-windows-installer
-;AppUpdatesURL=
+;Should also be displayed there, but I was unable to verify this
+AppContact=Michael Hex / Source Foundry
+;Displayed as "Comments" 
+AppComments=Hack fonts v2.020
+;Displayed as "Update information:" -NOT USED RIGHT NOW-
+;AppUpdatesURL=http://appupdates.com
+;---------------------------------------------------
 
-AppComments=Hack font installer
 
 ;This icon is used for the icon of HackWindowsInstaller.exe itself
 SetupIconFile=img\Hack-installer-icon.ico
 ;This icon will be displayed in Add/Remove programs and needs to be installed locally
 UninstallDisplayIcon={app}\Hack-installer-icon.ico
 
-;Folder configuration
+;Source dir is the base path
 SourceDir=C:\dev\git\Hack-windows-installer\
+;Store resulting exe in the \out folder
 OutputDir=out\
 OutputBaseFilename=HackWindowsInstaller
 
@@ -184,6 +190,8 @@ PrivilegesRequired=admin
 DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
+
+;You can't stop me.
 AllowCancelDuringInstall=False
 
 
@@ -193,7 +201,7 @@ AllowCancelDuringInstall=False
 SetupAppTitle=Hack Windows Installer
 
 ;SetupWindowsTitle is displayed in the setup window itself so we better include the version
-SetupWindowTitle=Hack Windows Installer 1.2.1
+SetupWindowTitle=Hack Windows Installer 1.3.0
 
 ;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -217,11 +225,11 @@ Name: "{app}\Hack Homepage"; Filename: "http://sourcefoundry.org/hack/";
 ;Copy license files - always copied
 Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
 
-;Copy the icon to the installation folder in order to show it in Add/Remove programs
+;Copy the icon to the installation folder in order to show it in Add/Remove Programs
 Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 ;------------------------
-;Install font files and register them to the registry
+;Install font files and register them
   Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
   Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf"; FontInstall: "Hack"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
   Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf"; FontInstall: "Hack Bold Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
@@ -243,7 +251,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 ;------------------------
-;Remove any font files that should be removed during install
+;Remove old font files during install
   Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
   Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
   Type: files; Name: "{fonts}\Hack-BoldOblique.otf"; 
@@ -253,7 +261,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 [Registry]
 ;------------------------
-;Remove any font names that should be removed during install
+;Remove old font names during install
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
@@ -261,7 +269,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ;------------------------
 
 ;------------------------
-;Delete any entry found in FontSubsitutes for each of the fonts that will are installed
+;Delete any entry found in FontSubsitutes for each of the fonts that will be installed
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold Italic (TrueType)"; ValueType: none; Flags: deletevalue;
@@ -271,7 +279,7 @@ Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.2.1"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.3.0"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 
@@ -652,7 +660,8 @@ var
 begin
   LogAsImportant('---BeforeInstallAction START---');
 
-  LogAsImportant('Setup version: 1.2.1');
+  LogAsImportant('Font name....: Hack fonts');
+  LogAsImportant('Setup version: 1.3.0');
   LogAsImportant('Font version.: 2.020');
   LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
