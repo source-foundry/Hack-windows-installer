@@ -29,7 +29,10 @@
     #pragma error 'Data.ini not found'
 #endif
 
+#define public SectionAbout 'About'
 #define public SectionGeneral 'General'
+#define public SectionVersion 'Version'
+//#define public SectionSupplementary 'Supplementary'
 #define public SectionInstallFonts 'InstallFonts'
 #define public SectionRemoveFonts 'RemoveFonts'
 
@@ -43,59 +46,97 @@
         GetDataIniValue(sectionName, valueName + '.' + Str(Counter))
 
 
-//Retrieve InstallerID
-#define public InstallerID GetDataIniValue('ID', 'InstallerID')
-#if len(InstallerID)==0
- #pragma error 'InstallerID is empty'
+//Retrieve SetupID
+#define public SetupID GetDataIniValue('ID', 'UniqueID')
+#if len(SetupID)==0
+ #pragma error 'UniqueID is empty'
 #endif
 
 //Retrieve source folder        
-#define font_source_folder GetDataIniValue(SectionGeneral, 'Folder')
+#define font_source_folder GetDataIniValue(SectionInstallFonts, 'SourceFolder')
 #if len(font_source_folder)==0
- #pragma error 'Source folder is empty'
+ #error 'Source folder is empty'
 #endif
 
 //Retrieve InstallerName
 #define public InstallerName GetDataIniValue(SectionGeneral, 'Name')
 #if len(InstallerName)==0
- #pragma error 'Name is empty'
+ #error 'Name is empty'
 #endif
 
 //Version of the SETUP/INSTALLER
-#define public Version GetDataIniValue(SectionGeneral, 'Version')
+#define public Version GetDataIniValue(SectionVersion, 'Version')
 #if len(Version)==0
- #pragma error 'Version is empty'
+ #error 'Version is empty'
 #endif
 
 //Overwrite the version when an external version is found
 #ifdef EXTERNAL_VERSION
- #define public Version EXTERNAL_VERSION
+ #if len(EXTERNAL_VERSION)>0
+     #define public Version EXTERNAL_VERSION
+ #endif
 #endif 
 
 //Version of the font(s)
-#define public FontVersion GetDataIniValue(SectionGeneral, 'FontVersion')
+#define public FontVersion GetDataIniValue(SectionVersion, 'FontVersion')
 #if len(FontVersion)==0
  #pragma error 'FontVersion is empty'
 #endif
 
+//Overwrite the font version when an external font version is found
+#ifdef EXTERNAL_FONT_VERSION
+ #if len(EXTERNAL_FONT_VERSION)>0
+     #define public FontVersion EXTERNAL_FONT_VERSION
+ #endif
+#endif 
+
 //Name of this font
-#define public FontName GetDataIniValue(SectionGeneral, 'FontName')
+#define public FontName GetDataIniValue(SectionAbout, 'FontName')
 #if len(FontName)==0
- #pragma error 'FontName is empty'
+ #error 'FontName is empty'
 #endif
 
-
 //Retrieve InstallerName
-#define public Publisher GetDataIniValue(SectionGeneral, 'Publisher')
+#define public Publisher GetDataIniValue(SectionAbout, 'Publisher')
 #if len(Publisher)==0
- #pragma error 'Publisher is empty'
+ #error 'Publisher is empty'
 #endif
 
 //Retrieve Copyright information 
-#define public Copyright GetDataIniValue(SectionGeneral, 'Copyright')
+#define public Copyright GetDataIniValue(SectionAbout, 'Copyright')
 #if len(Copyright)==0
- #pragma error 'Copyright is empty'
+ #error 'Copyright is empty'
 #endif
+
+//Retrieve icon file
+#define public IconFile GetDataIniValue(SectionGeneral, 'Icon')
+//Icon file can be empty, so no check here
+
+
+//Retrieve ExeFile (name of the setup)  
+#define public ExeFile GetDataIniValue(SectionGeneral, 'ExeFile')
+#if len(ExeFile)==0
+ #error 'ExeFile is empty'
+#endif
+
+//Retrieve DestinationFolder 
+#define public DestinationFolder GetDataIniValue(SectionGeneral, 'DestinationFolder')
+#if len(DestinationFolder)==0
+ #error 'DestinationFolder is empty'
+#endif
+
+//Retrieve Website 
+#define public Website GetDataIniValue(SectionAbout, 'Website')
+#if len(Website)==0
+ #error 'Website is empty'
+#endif
+
+//Retrieve license file(s) 
+#define public LicenseFiles GetDataIniValue(SectionGeneral, 'LicenseFile')
+#if len(LicenseFiles)==0
+ #error 'LicenseFile is empty'
+#endif
+
 
 
 //Process *InstallFonts* section
@@ -104,7 +145,7 @@
 #define install_font_count_string GetDataIniValue(SectionInstallFonts, 'Count')
 //Check value
 #if len(install_font_count_string)==0
- #pragma error 'Value COUNT count of fonts to be installed is empty'
+ #error 'Value COUNT count of fonts to be installed is empty'
 #endif
 
 //Declare the arrays
@@ -200,19 +241,6 @@
 #undef i
 
 
-
-
-
-
-
-//URL of the project homepage for the FONT 
-#define public HackMonospaced_Homepage 'http://sourcefoundry.org/hack/'       /*'https://github.com/chrissimpkins/Hack'*/
-
-//URL of the installer homepage
-#define public Installer_Homepage 'https://github.com/source-foundry/Hack-windows-installer'
-
-
-
 //Internal names of the font services 
 #define public FontCacheService 'FontCache'
 #define public FontCache30Service 'FontCache3.0.0.0'
@@ -223,6 +251,14 @@
 
 //We need this more than once
 #define public TrueType '(TrueType)'
+
+
+
+//--------------------------------------------------------
+//Version of this installer script. Please do not change.
+#define public ScriptVersion '1.08'
+//--------------------------------------------------------
+
 
 
 ;---DEBUG---
@@ -254,8 +290,8 @@
 
 
 [Setup]
-AppId={#InstallerID}
-SetupMutex={#InstallerID}_Mutex 
+AppId={#SetupID}
+SetupMutex={#SetupID}_Mutex 
 
 AppName={#InstallerName}
 
@@ -268,7 +304,7 @@ AppCopyright={#Copyright}
 ;Information displayed in Control Panel -> Add/Remove Programs applet
 ;---------------------------------------------------
 ;Displayed as "Help link:"
-AppSupportURL={#Installer_Homepage}
+AppSupportURL={#Website}
 ;Should also be displayed there, but I was unable to verify this
 AppContact={#Publisher}
 ;Displayed as "Comments" 
@@ -277,21 +313,31 @@ AppComments={#FontName} v{#FontVersion}
 ;AppUpdatesURL=http://appupdates.com
 ;---------------------------------------------------
 
+;Store resulting exe in the \out folder
+OutputDir=out\
 
-;This icon is used for the icon of HackWindowsInstaller.exe itself
-SetupIconFile=img\Hack-installer-icon.ico
-;This icon will be displayed in Add/Remove programs and needs to be installed locally
-UninstallDisplayIcon={app}\Hack-installer-icon.ico
+;How to call the resulting EXE file
+OutputBaseFilename={#ExeFile}
+
+;Target folder settings
+DefaultDirName={pf}\{#AddBackslash(DestinationFolder)}
+;Dot warn the user when the folder exists
+DirExistsWarning=no
+
+
+#if len(IconFile)>0
+ ;This icon is used for the icon of the resulting exe
+ SetupIconFile={#IconFile}
+
+ ;This icon will be displayed in Add/Remove Programs and needs to be installed locally
+ UninstallDisplayIcon={app}\{#ExtractFileName(IconFile)}
+#endif
+
 
 ;Source dir is the base path
 SourceDir={#base_path}
-;Store resulting exe in the \out folder
-OutputDir=out\
-OutputBaseFilename=HackWindowsInstaller
 
-;Target folder settings
-DefaultDirName={pf}\Hack Windows Installer\
-DirExistsWarning=no
+
 
 ;Always create a log to aid troubleshooting. The file is created as:  
 ;C:\Users\<YourUsername>\AppData\Local\Temp\Setup Log Year-Month-Day #XXX.txt
@@ -309,6 +355,7 @@ Uninstallable=Yes
 Compression=lzma2/ultra
 SolidCompression=yes
 
+;As we install to {fonts}, we require admin privileges
 PrivilegesRequired=admin
 
 ;Ignore some screens
@@ -340,18 +387,23 @@ ReadyLabel2b=Setup is now ready to install the {#FontName} v{#FontVersion} on yo
 
 
 [Icons]
+;Create shortcut to the Font applet so the user can easily view the installed fonts.
 Name: "{app}\Fonts Applet"; Filename: "control.exe"; Parameters: "/name Microsoft.Fonts"; WorkingDir: "{win}";
 
-;Link to the Hack homepage 
-Name: "{app}\Hack Homepage"; Filename: "{#HackMonospaced_Homepage}"; 
+;Link to the homepage for this font
+Name: "{app}\Website"; Filename: "{#Website}"; 
 
 
 [Files]
-;Copy license files - always copied
-Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
+#if len(LicenseFiles)>0
+  ;Copy license files
+  Source: "{#LicenseFiles}"; DestDir: "{app}"; Flags: ignoreversion;
+#endif
 
-;Copy the icon to the installation folder in order to show it in Add/Remove Programs
-Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
+#if len(IconFile)>0
+  ;Copy the icon to the installation folder in order to show it in Add/Remove Programs
+  Source: "{#IconFile}"; DestDir: "{app}"; Flags: ignoreversion;
+#endif
 
 ;------------------------
 ;Install font files and register them
@@ -846,13 +898,15 @@ begin
   LogAsImportant('---BeforeInstallAction START---');
 
   //Write system information to log file
-  LogAsImportant('Font name....: {#FontName}');
-  LogAsImportant('Setup version: {#Version}');
-  LogAsImportant('Font version.: {#FontVersion}');
-  LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
-  LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
-  LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
-
+  LogAsImportant('--------------------------------');
+  LogAsImportant('Font name.....: {#FontName}');
+  LogAsImportant('Script version: {#ScriptVersion}');
+  LogAsImportant('Setup version.: {#Version}');
+  LogAsImportant('Font version..: {#FontVersion}');
+  LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
+  LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
+  LogAsImportant('Dest folder...: ' + ExpandConstant('{app}'));
+  LogAsImportant('--------------------------------');
 
   //Show a custom prepare to install page in order to give the user output what we are doing
   customProgressPage.SetProgress(0, 0);
@@ -1027,5 +1081,5 @@ end;
 
 
 
-
-#expr SaveToFile(AddBackslash(SourcePath) + "HackWindowsInstaller_TEMP_Preprocessed.iss")
+//Save the result of the preprocessor to a file for review
+#expr SaveToFile(AddBackslash(SourcePath) + "zz_Preprocessor_Result.iss")

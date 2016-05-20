@@ -30,6 +30,13 @@
 
 
 
+
+
+
+
+
+
+
 ; Processing section InstallFonts
 
 
@@ -99,11 +106,6 @@
 
 
 
-
-
-
-
-
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
 ;Because the sub expects a string for each item, an error from ISPP about "Actual datatype not declared type" 
@@ -143,7 +145,7 @@ AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
 ;Information displayed in Control Panel -> Add/Remove Programs applet
 ;---------------------------------------------------
 ;Displayed as "Help link:"
-AppSupportURL=https://github.com/source-foundry/Hack-windows-installer
+AppSupportURL=http://sourcefoundry.org/hack/
 ;Should also be displayed there, but I was unable to verify this
 AppContact=Michael Hex / Source Foundry
 ;Displayed as "Comments" 
@@ -152,21 +154,29 @@ AppComments=Hack fonts v2.020
 ;AppUpdatesURL=http://appupdates.com
 ;---------------------------------------------------
 
-
-;This icon is used for the icon of HackWindowsInstaller.exe itself
-SetupIconFile=img\Hack-installer-icon.ico
-;This icon will be displayed in Add/Remove programs and needs to be installed locally
-UninstallDisplayIcon={app}\Hack-installer-icon.ico
-
-;Source dir is the base path
-SourceDir=C:\dev\git\Hack-windows-installer\
 ;Store resulting exe in the \out folder
 OutputDir=out\
+
+;How to call the resulting EXE file
 OutputBaseFilename=HackWindowsInstaller
 
 ;Target folder settings
 DefaultDirName={pf}\Hack Windows Installer\
+;Dot warn the user when the folder exists
 DirExistsWarning=no
+
+
+ ;This icon is used for the icon of the resulting exe
+ SetupIconFile=img\Hack-installer-icon.ico
+
+ ;This icon will be displayed in Add/Remove Programs and needs to be installed locally
+ UninstallDisplayIcon={app}\Hack-installer-icon.ico
+
+
+;Source dir is the base path
+SourceDir=C:\dev\git\Hack-windows-installer\
+
+
 
 ;Always create a log to aid troubleshooting. The file is created as:  
 ;C:\Users\<YourUsername>\AppData\Local\Temp\Setup Log Year-Month-Day #XXX.txt
@@ -184,6 +194,7 @@ Uninstallable=Yes
 Compression=lzma2/ultra
 SolidCompression=yes
 
+;As we install to {fonts}, we require admin privileges
 PrivilegesRequired=admin
 
 ;Ignore some screens
@@ -215,18 +226,19 @@ ReadyLabel2b=Setup is now ready to install the Hack fonts v2.020 on your system.
 
 
 [Icons]
+;Create shortcut to the Font applet so the user can easily view the installed fonts.
 Name: "{app}\Fonts Applet"; Filename: "control.exe"; Parameters: "/name Microsoft.Fonts"; WorkingDir: "{win}";
 
-;Link to the Hack homepage 
-Name: "{app}\Hack Homepage"; Filename: "http://sourcefoundry.org/hack/"; 
+;Link to the homepage for this font
+Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/"; 
 
 
 [Files]
-;Copy license files - always copied
-Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
+  ;Copy license files
+  Source: "license*.*"; DestDir: "{app}"; Flags: ignoreversion;
 
-;Copy the icon to the installation folder in order to show it in Add/Remove Programs
-Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
+  ;Copy the icon to the installation folder in order to show it in Add/Remove Programs
+  Source: "img\Hack-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 
 ;------------------------
 ;Install font files and register them
@@ -660,13 +672,15 @@ var
 begin
   LogAsImportant('---BeforeInstallAction START---');
 
-  LogAsImportant('Font name....: Hack fonts');
-  LogAsImportant('Setup version: 1.3.0');
-  LogAsImportant('Font version.: 2.020');
-  LogAsImportant('Local time...: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
-  LogAsImportant('Fonts folder.: ' + ExpandConstant('{fonts}'));
-  LogAsImportant('Dest folder..: ' + ExpandConstant('{app}'));
-
+  LogAsImportant('--------------------------------');
+  LogAsImportant('Font name.....: Hack fonts');
+  LogAsImportant('Script version: 1.08');
+  LogAsImportant('Setup version.: 1.3.0');
+  LogAsImportant('Font version..: 2.020');
+  LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
+  LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
+  LogAsImportant('Dest folder...: ' + ExpandConstant('{app}'));
+  LogAsImportant('--------------------------------');
 
   customProgressPage.SetProgress(0, 0);
   customProgressPage.Show;
@@ -811,7 +825,6 @@ begin
  end;
 
 end;
-
 
 
 
