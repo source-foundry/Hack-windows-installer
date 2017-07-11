@@ -13,6 +13,7 @@ This installer addresses most of the [commonly obeserved issues](https://github.
 - Double click `HackWindowsInstaller.exe`
 - If you see a *Windows protected your PC* message, click on `More info` and select `Run anyway`. This *Windows SmartScreen warning* can be safely ignored, the installer is virus and addware free (see VirusTotal report for each release) 
 - Follow the installation instructions
+- At the end, the installer will request a reboot 
 
 ## Installer Source
 
