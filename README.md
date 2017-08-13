@@ -1,8 +1,8 @@
 # Hack Windows Installer
 
-A Windows installer for the [Hack](https://github.com/chrissimpkins/Hack) typeface.
+A Windows installer for the [Hack](https://github.com/source-foundry/Hack) typeface.
 
-While it might seem like overkill to use a Windows installer for fonts, there is good reason for this on the Windows platform. A number of things can go wrong when one tries to install or update frequently updated fonts manually (see [issue #152](https://github.com/chrissimpkins/Hack/issues/152) and [issue #129](https://github.com/chrissimpkins/Hack/issues/129) in the [Hack repository](https://github.com/chrissimpkins/Hack/)). 
+While it might seem like overkill to use a Windows installer for fonts, there is good reason for this on the Windows platform. A number of things can go wrong when one tries to install or update frequently updated fonts manually (see [issue #152](https://github.com/source-foundry/Hack/issues/152) and [issue #129](https://github.com/source-foundry/Hack/issues/129) in the [Hack repository](https://github.com/source-foundry/Hack/)). 
 
 This installer addresses most of the [commonly obeserved issues](https://github.com/source-foundry/Hack-windows-installer/blob/master/FontInstallationIssues.md).
 
