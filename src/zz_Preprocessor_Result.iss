@@ -47,26 +47,26 @@
 ;  INI position #1
 ;    Hack Bold
 ;    Hack-Bold.ttf
-;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf
-;    a7bb6faacd609145b55ed15ca238755544c03af5
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Bold.ttf
+;    12022be7e047f0ec26517084d5fc6d444a2511ac
 
 ;  INI position #2
 ;    Hack
 ;    Hack-Regular.ttf
-;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf
-;    664cfe2a64de1486c0ace8073ceeb6d9281e8b78
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Regular.ttf
+;    8f7271c506e5fc5b6ad69ec00845f10d0a4ee146
 
 ;  INI position #3
 ;    Hack Bold Italic
 ;    Hack-BoldItalic.ttf
-;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf
-;    c428004a2fe3570450c6d03442052b1a9989c58b
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-BoldItalic.ttf
+;    e41d5b385511295d1f771f2c647e9151dbf72012
 
 ;  INI position #4
 ;    Hack Italic
 ;    Hack-Italic.ttf
-;    C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf
-;    efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2
+;    C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Italic.ttf
+;    593a16309b9fe89ce600ef688cb53d5747054ab3
 
 
 
@@ -111,10 +111,10 @@
 ;Because the sub expects a string for each item, an error from ISPP about "Actual datatype not declared type" 
 ;when compiling the setup indicates that total_fonts is set to a wrong value
   
-; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf\Hack-Bold.ttf - "Hack Bold" - a7bb6faacd609145b55ed15ca238755544c03af5
-; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf\Hack-Regular.ttf - "Hack" - 664cfe2a64de1486c0ace8073ceeb6d9281e8b78
-; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf\Hack-BoldItalic.ttf - "Hack Bold Italic" - c428004a2fe3570450c6d03442052b1a9989c58b
-; C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf\Hack-Italic.ttf - "Hack Italic" - efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Bold.ttf\Hack-Bold.ttf - "Hack Bold" - 12022be7e047f0ec26517084d5fc6d444a2511ac
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Regular.ttf\Hack-Regular.ttf - "Hack" - 8f7271c506e5fc5b6ad69ec00845f10d0a4ee146
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-BoldItalic.ttf\Hack-BoldItalic.ttf - "Hack Bold Italic" - e41d5b385511295d1f771f2c647e9151dbf72012
+; C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Italic.ttf\Hack-Italic.ttf - "Hack Italic" - 593a16309b9fe89ce600ef688cb53d5747054ab3
 
 ;---END---
 
@@ -136,8 +136,8 @@ SetupMutex=HackWindowsInstaller_Mutex
 
 AppName=Hack Windows Installer
 
-AppVersion=1.3.0
-VersionInfoVersion=1.3.0
+AppVersion=1.4.0
+VersionInfoVersion=1.4.0
 
 AppPublisher=Michael Hex / Source Foundry
 AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
@@ -149,7 +149,7 @@ AppSupportURL=http://sourcefoundry.org/hack/
 ;Should also be displayed there, but I was unable to verify this
 AppContact=Michael Hex / Source Foundry
 ;Displayed as "Comments" 
-AppComments=Hack fonts v2.020
+AppComments=Hack fonts v3.000
 ;Displayed as "Update information:" -NOT USED RIGHT NOW-
 ;AppUpdatesURL=http://appupdates.com
 ;---------------------------------------------------
@@ -208,7 +208,7 @@ AllowCancelDuringInstall=False
 SetupAppTitle=Hack Windows Installer
 
 ;SetupWindowsTitle is displayed in the setup window itself so we better include the version
-SetupWindowTitle=Hack Windows Installer 1.3.0
+SetupWindowTitle=Hack Windows Installer 1.4.0
 
 ;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -218,7 +218,7 @@ SetupWindowTitle=Hack Windows Installer 1.3.0
 ReadyLabel1=
 
 ;ReadyLabel2b: "Click Install to continue with the installation" 
-ReadyLabel2b=Setup is now ready to install the Hack fonts v2.020 on your system.
+ReadyLabel2b=Setup is now ready to install the Hack fonts v3.000 on your system.
 
 
 [Icons]
@@ -238,10 +238,10 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 
 ;------------------------
 ;Install font files and register them
-  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Regular.ttf"; FontInstall: "Hack"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-BoldItalic.ttf"; FontInstall: "Hack Bold Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
-  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v2_020\Hack-Italic.ttf"; FontInstall: "Hack Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Bold.ttf"; FontInstall: "Hack Bold"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Regular.ttf"; FontInstall: "Hack"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-BoldItalic.ttf"; FontInstall: "Hack Bold Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
+  Source: "C:\dev\git\Hack-windows-installer\fonts\Hack_v3_000\Hack-Italic.ttf"; FontInstall: "Hack Italic"; DestDir: "{fonts}"; Check: FontFileInstallationRequired; Flags: ignoreversion restartreplace; 
 ;------------------------
 
 
@@ -287,7 +287,7 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.3.0"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.4.0"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 
@@ -519,10 +519,10 @@ procedure FillFontDataArray();
 begin
 
 
-  AddFontData('Hack-Bold.ttf', 'Hack Bold', 'a7bb6faacd609145b55ed15ca238755544c03af5');
-  AddFontData('Hack-Regular.ttf', 'Hack', '664cfe2a64de1486c0ace8073ceeb6d9281e8b78');
-  AddFontData('Hack-BoldItalic.ttf', 'Hack Bold Italic', 'c428004a2fe3570450c6d03442052b1a9989c58b');
-  AddFontData('Hack-Italic.ttf', 'Hack Italic', 'efdae4b94858b98eab6dcf2cb8e3cc3d28263cc2');
+  AddFontData('Hack-Bold.ttf', 'Hack Bold', '12022be7e047f0ec26517084d5fc6d444a2511ac');
+  AddFontData('Hack-Regular.ttf', 'Hack', '8f7271c506e5fc5b6ad69ec00845f10d0a4ee146');
+  AddFontData('Hack-BoldItalic.ttf', 'Hack Bold Italic', 'e41d5b385511295d1f771f2c647e9151dbf72012');
+  AddFontData('Hack-Italic.ttf', 'Hack Italic', '593a16309b9fe89ce600ef688cb53d5747054ab3');
 
 end;
 
@@ -670,9 +670,9 @@ begin
 
   LogAsImportant('--------------------------------');
   LogAsImportant('Font name.....: Hack fonts');
-  LogAsImportant('Script version: 2.01');
-  LogAsImportant('Setup version.: 1.3.0');
-  LogAsImportant('Font version..: 2.020');
+  LogAsImportant('Script version: 2.02');
+  LogAsImportant('Setup version.: 1.4.0');
+  LogAsImportant('Font version..: 3.000');
   LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
   LogAsImportant('Dest folder...: ' + ExpandConstant('{app}'));
@@ -753,11 +753,8 @@ begin
          FontCacheService_Stopped:=false;
       end;
 
-      customProgressPage.SetText('Starting service FontCache3.0.0.0...','');
-      if FontCache30Service_Stopped=true then begin
-         StartNTService2('FontCache3.0.0.0');         
-         FontCache30Service_Stopped:=false;
-      end;
+      
+
 
       SendBroadcastMessage(29, 0, 0);
 
