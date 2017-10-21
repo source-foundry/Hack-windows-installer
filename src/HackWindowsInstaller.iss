@@ -256,7 +256,7 @@
 
 //--------------------------------------------------------
 //Version of this installer script. Please do not change.
-#define public ScriptVersion '2.02'
+#define public ScriptVersion '2.03'
 //--------------------------------------------------------
 
 
@@ -984,27 +984,29 @@ begin
     begin
 
       //Start the service the before action has stopped
-      customProgressPage.SetText('Starting service {#FontCacheService}...','');
+      customProgressPage.SetText('Starting {#FontCacheService} service...','');
       if FontCacheService_Stopped=true then begin
          StartNTService2('{#FontCacheService}');
          FontCacheService_Stopped:=false;
+         customProgressPage.SetText('{#FontCacheService} service was started','');
+      end;
+      
+      customProgressPage.SetText('Starting service {#FontCache30Service}...','');
+      if FontCache30Service_Stopped=true then begin
+         StartNTService2('{#FontCache30Service}');         
+         FontCache30Service_Stopped:=false;
+         customProgressPage.SetText('{#FontCache30Service} service was started','');
       end;
 
-      //We got several error reports that this steps hangs the installer if certain programs are running:
-      //
+      
+      // We got several error reports that step hangs the installer if certain programs are running:
       // "Installer stuck at starting fontcache on windows 10 Version 10.0.15063 Build 15063" 
       // https://github.com/source-foundry/Hack-windows-installer/issues/11
-      //
-      //At least for the one machine I was able to reproduce this, starting the .NET Fontache caused the installer to hang.
-      //Not starting the service after the font install had NO negative impact on the program that seemed to cause this (MS Word).
-      //Therefore, we will NOT restart this service to avoid issue #11.
       
-      //customProgressPage.SetText('Starting service {#FontCache30Service}...','');
-      //if FontCache30Service_Stopped=true then begin
-      //   StartNTService2('{#FontCache30Service}');         
-      //   FontCache30Service_Stopped:=false;
-      //end;
-
+      // Hence, this step is disabled although it is recommended to send out WM_FONTCHANGE. Given
+      // that we request a restart anyway, this should only have a minimum impact (if at all). 
+      {
+      customProgressPage.SetText('Informing Windows that fonts have changed...','');
 
       //Inform windows that fonts have changed (just to be sure we do this always)
       //See https://msdn.microsoft.com/en-us/library/windows/desktop/dd183326%28v=vs.85%29.aspx
@@ -1013,6 +1015,8 @@ begin
       //WM_FONTCHANGE = 0x1D = 29
 
       customProgressPage.SetText('Storing font data...','');
+      }
+
 
       //Write the buffer to disk. We better make sure that {app} exists.
       appDestinationFolder:=ExpandConstant('{app}');
