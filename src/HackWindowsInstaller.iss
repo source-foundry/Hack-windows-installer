@@ -444,10 +444,10 @@ Name: "{app}\Website"; Filename: "{#Website}";
 ;------------------------
 ;Remove old font names during install
 #define public i 0
-#sub Sub_RegistyDelete
+#sub Sub_DeleteRegistryOldFontnames
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "{#remove_font_names[i]} {#TrueType}"; ValueType: none; Flags: deletevalue;
 #endsub
-#for {i = 0; i < remove_font_count; i++} Sub_RegistyDelete
+#for {i = 0; i < remove_font_count; i++} Sub_DeleteRegistryOldFontnames
 #undef i
 ;------------------------
 
@@ -460,6 +460,22 @@ Name: "{app}\Website"; Filename: "{#Website}";
 #for {i = 0; i < install_font_count; i++} Sub_DeleteRegistryFontSubstitutes
 #undef i
 ;------------------------
+
+;------------------------
+;Check if we fint a font name without "Bold" or "Italic" in it and if so, we will add (Regular) and will delete it during installation
+;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
+#define public i 0
+#sub Sub_DeleteRegistryFontRegular
+  #if pos('Bold', font_names[i]) == 0
+    #if pos('Italic', font_names[i]) == 0
+       Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "{#font_names[i]} Regular {#TrueType}"; ValueType: none; Flags: deletevalue;
+    #endif
+  #endif 
+#endsub
+#for {i = 0; i < install_font_count; i++} Sub_DeleteRegistryFontRegular
+#undef i
+;------------------------
+
 
  
 [INI]
@@ -1011,7 +1027,6 @@ begin
       //Inform windows that fonts have changed (just to be sure we do this always)
       //See https://msdn.microsoft.com/en-us/library/windows/desktop/dd183326%28v=vs.85%29.aspx
       SendBroadcastMessage(29, 0, 0);
-      //HWND_BROADCAST = -1
       //WM_FONTCHANGE = 0x1D = 29
       }
 

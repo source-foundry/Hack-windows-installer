@@ -308,6 +308,13 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Italic (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
 
+;------------------------
+;Check if we fint a font name without "Bold" or "Italic" in it and if so, we will add (Regular) and will delete it during installation
+;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
+       Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Regular (TrueType)"; ValueType: none; Flags: deletevalue;
+;------------------------
+
+
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
