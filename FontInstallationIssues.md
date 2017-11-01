@@ -34,11 +34,11 @@ Depending what else has gone wrong, the font registration data (Name and File) i
 
 *HackWindowsInstaller* will ensure that the files and the registration data are exactly as desired and reinstall the font if this is not the case.
 
-## A new font is not visible directly after installation
+## A font subsitute could be defined
 
-When a new font is installed, Windows expects the broadcast message WM_FONTCHANGE before the font can be used. 
+It is possible using the registry location *HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes* to define an "alias" for a font that is mapped to a different font. For example, it is possible to define that Windows will use "Arial" when the font "Hack (Italic)" is requested. This can cause all sort of display problems.
 
-*HackWindowsInstaller* will sent this message if any new font is installed. However, some applications do not react on this message so a restart will be requested when the installation is finished.
+*HackWindowsInstaller* will delete any found substitutes for the font that is installed.   
 
 ## A font cannot be updated without restart
 
@@ -46,6 +46,13 @@ The [MSDN  docs](https://msdn.microsoft.com/en-us/library/windows/desktop/dd1833
 
 *HackWindowsInstaller* will always request a restart when the installation is finished. 
 
+## Not fixed: A new font is not visible directly after installation
+
+When a new font is installed, Windows expects the broadcast message [WM_FONTCHANGE](https://msdn.microsoft.com/en-us/library/windows/desktop/dd145211(v=vs.85).aspx) before the font can be used.
+
+When sending this message during installation we learned that this can cause the installer to hang (see [issue #11](https://github.com/source-foundry/Hack-windows-installer/issues/11)), so the installer will not sent this message.
+
+As we request a restart after installation, the negative impact should be minimal.  
 
 ## Not fixed: The cache files of the FontCache service can be corrupted
 
@@ -59,7 +66,7 @@ After that, restart the computer.
 
 
 ----------
-2016-04-25 (Updated 2017-07-11)
+2016-04-25 (Updated 2017-11-01)
 
 ~Michael 'Tex' Hex
 
