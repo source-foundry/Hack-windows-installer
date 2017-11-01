@@ -1013,10 +1013,9 @@ begin
       SendBroadcastMessage(29, 0, 0);
       //HWND_BROADCAST = -1
       //WM_FONTCHANGE = 0x1D = 29
-
-      customProgressPage.SetText('Storing font data...','');
       }
 
+      customProgressPage.SetText('Storing font data...','');
 
       //Write the buffer to disk. We better make sure that {app} exists.
       appDestinationFolder:=ExpandConstant('{app}');

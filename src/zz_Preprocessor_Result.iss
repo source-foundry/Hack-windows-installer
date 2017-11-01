@@ -96,6 +96,22 @@
 ;    Hack-RegularOblique.otf
 ;    Hack Oblique
 
+;  INI position #5
+;    Hack-Regular-linegap*.*
+;    Hack Linegap
+
+;  INI position #6
+;    Hack-Bold-linegap*.*
+;    Hack Bold Linegap
+
+;  INI position #7
+;    Hack-Italic-linegap*.*
+;    Hack Italic linegap
+
+;  INI position #8
+;    Hack-BoldItalic-linegap*.*
+;    Hack Bold Italic linegap
+
 
 
 
@@ -136,8 +152,8 @@ SetupMutex=HackWindowsInstaller_Mutex
 
 AppName=Hack Windows Installer
 
-AppVersion=1.4.1
-VersionInfoVersion=1.4.1
+AppVersion=1.4.2
+VersionInfoVersion=1.4.2
 
 AppPublisher=Michael Hex / Source Foundry
 AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
@@ -208,7 +224,7 @@ AllowCancelDuringInstall=False
 SetupAppTitle=Hack Windows Installer
 
 ;SetupWindowsTitle is displayed in the setup window itself so we better include the version
-SetupWindowTitle=Hack Windows Installer 1.4.1
+SetupWindowTitle=Hack Windows Installer 1.4.2
 
 ;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -264,6 +280,10 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
   Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
   Type: files; Name: "{fonts}\Hack-BoldOblique.otf"; 
   Type: files; Name: "{fonts}\Hack-RegularOblique.otf"; 
+  Type: files; Name: "{fonts}\Hack-Regular-linegap*.*"; 
+  Type: files; Name: "{fonts}\Hack-Bold-linegap*.*"; 
+  Type: files; Name: "{fonts}\Hack-Italic-linegap*.*"; 
+  Type: files; Name: "{fonts}\Hack-BoldItalic-linegap*.*"; 
 ;------------------------
 
 
@@ -274,6 +294,10 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Linegap (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Linegap (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Italic linegap (TrueType)"; ValueType: none; Flags: deletevalue;
+  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Italic linegap (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
 
 ;------------------------
@@ -287,7 +311,7 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.4.1"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.4.2"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 
@@ -671,7 +695,7 @@ begin
   LogAsImportant('--------------------------------');
   LogAsImportant('Font name.....: Hack fonts');
   LogAsImportant('Script version: 2.03');
-  LogAsImportant('Setup version.: 1.4.1');
+  LogAsImportant('Setup version.: 1.4.2');
   LogAsImportant('Font version..: 3.000');
   LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
@@ -767,10 +791,9 @@ begin
       customProgressPage.SetText('Informing Windows that fonts have changed...','');
 
       SendBroadcastMessage(29, 0, 0);
-
-      customProgressPage.SetText('Storing font data...','');
       }
 
+      customProgressPage.SetText('Storing font data...','');
 
       appDestinationFolder:=ExpandConstant('{app}');
       appDestinationFolder:=AddBackslash(appDestinationFolder);
