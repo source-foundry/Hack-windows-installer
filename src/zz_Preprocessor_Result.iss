@@ -12,6 +12,7 @@
 ; FSCW Script Version: 2.09
 ; Inno Setup Version.: 5.5.9
 ; Inno Setup Type....: ANSI
+; 
 ;--------------------------------------------------------
 
 
@@ -96,34 +97,26 @@
 
 
 ;  INI position #1
-;    Hack-BoldOblique.ttf
+;    Hack-BoldOblique*.*
 ;    Hack Bold Oblique
 
 ;  INI position #2
-;    Hack-RegularOblique.ttf
+;    Hack-RegularOblique*.*
 ;    Hack Oblique
 
 ;  INI position #3
-;    Hack-BoldOblique.otf
-;    Hack Bold Oblique
-
-;  INI position #4
-;    Hack-RegularOblique.otf
-;    Hack Oblique
-
-;  INI position #5
 ;    Hack-Regular-linegap*.*
 ;    Hack Linegap
 
-;  INI position #6
+;  INI position #4
 ;    Hack-Bold-linegap*.*
 ;    Hack Bold Linegap
 
-;  INI position #7
+;  INI position #5
 ;    Hack-Italic-linegap*.*
 ;    Hack Italic linegap
 
-;  INI position #8
+;  INI position #6
 ;    Hack-BoldItalic-linegap*.*
 ;    Hack Bold Italic linegap
 
@@ -289,10 +282,8 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 
 ;------------------------
 ;Remove old font files during install
-  Type: files; Name: "{fonts}\Hack-BoldOblique.ttf"; 
-  Type: files; Name: "{fonts}\Hack-RegularOblique.ttf"; 
-  Type: files; Name: "{fonts}\Hack-BoldOblique.otf"; 
-  Type: files; Name: "{fonts}\Hack-RegularOblique.otf"; 
+  Type: files; Name: "{fonts}\Hack-BoldOblique*.*"; 
+  Type: files; Name: "{fonts}\Hack-RegularOblique*.*"; 
   Type: files; Name: "{fonts}\Hack-Regular-linegap*.*"; 
   Type: files; Name: "{fonts}\Hack-Bold-linegap*.*"; 
   Type: files; Name: "{fonts}\Hack-Italic-linegap*.*"; 
@@ -303,8 +294,6 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 [Registry]
 ;------------------------
 ;Remove old font names during install
-  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
-  Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Bold Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Oblique (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Linegap (TrueType)"; ValueType: none; Flags: deletevalue;
