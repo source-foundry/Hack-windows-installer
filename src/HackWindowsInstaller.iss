@@ -1,28 +1,49 @@
-//Hack Windows Installer 
-//Copyright (C) 2016 Michael Hex 
+//Font Setup Creator for Windows (FSCW) + Hack Windows Installer 
+//Copyright (C) 2016-2017 Michael Hex 
+//
 //Licensed under the MIT License
+//
+//https://github.com/source-foundry/FSCW
 //https://github.com/source-foundry/Hack-windows-installer
+//
+//--------------------------------------------------------
+//Version of this installer script. Please do not change.
+#define public ScriptVersion '2.09'
+//--------------------------------------------------------
 
-//We require InnoSetup 5.5.8
-#if VER < EncodeVer(5,5,8)
-  #error A more recent version of Inno Setup is required to compile this script (5.5.8 or newer)
+
+//We require InnoSetup 5.5.9
+#if VER < EncodeVer(5,5,9)
+  #error A more recent version of Inno Setup is required to compile this script (5.5.9 or newer)
 #endif
 
+#if DEFINED(UNICODE) != 0
+    #define public InnoSetupType 'Unicode'
+#else 
+    #define public InnoSetupType 'ANSI'
+#endif
+
+
+#emit ';--------------------------------------------------------'
+#emit '; FSCW Script Version: ' + ScriptVersion
+#emit '; Inno Setup Version.: ' + DecodeVer(VER)
+#emit '; Inno Setup Type....: ' + InnoSetupType
+#emit ';--------------------------------------------------------'
+
+
+//Set ISPP options
 #pragma option -v+
 #pragma verboselevel 9
 
-
-//-------------------------------------------------
 
 //Get the base path of this project. It is assumed that this .ISS file is located in a folder named "src" and the base path is the folder above it
 #define base_path StringChange(SourcePath,'src\','') 
 #emit '; ISPP Base Path: ' + base_path
 
-
 //The name of the data.ini to be used. Default is data.ini in the same path as this file
 #define public DataIni AddBackslash(base_path) + 'src\Data.ini'
+#emit '; DATA.INI Path: ' + DataIni
 
-//-------------------------------------------------
 
 //Start processing data from 'DATA.ini'
 #if !FileExists(DataIni)
@@ -32,7 +53,6 @@
 #define public SectionAbout 'About'
 #define public SectionGeneral 'General'
 #define public SectionVersion 'Version'
-//#define public SectionSupplementary 'Supplementary'
 #define public SectionInstallFonts 'InstallFonts'
 #define public SectionRemoveFonts 'RemoveFonts'
 
@@ -46,23 +66,15 @@
         GetDataIniValue(sectionName, valueName + '.' + Str(Counter))
 
 
-//Retrieve SetupID
-#define public SetupID GetDataIniValue('ID', 'UniqueID')
-#if len(SetupID)==0
+
+//Retrieve Unique / Setup ID
+#define public UniqueID GetDataIniValue('ID', 'UniqueID')
+#if len(UniqueID)==0
  #pragma error 'UniqueID is empty'
 #endif
 
-//Retrieve source folder        
-#define font_source_folder GetDataIniValue(SectionInstallFonts, 'SourceFolder')
-#if len(font_source_folder)==0
- #error 'Source folder is empty'
-#endif
 
-//Retrieve InstallerName
-#define public InstallerName GetDataIniValue(SectionGeneral, 'Name')
-#if len(InstallerName)==0
- #error 'Name is empty'
-#endif
+//--- VERSION section ---
 
 //Version of the SETUP/INSTALLER
 #define public Version GetDataIniValue(SectionVersion, 'Version')
@@ -90,13 +102,16 @@
  #endif
 #endif 
 
+
+//--- ABOUT section ---
+
 //Name of this font
 #define public FontName GetDataIniValue(SectionAbout, 'FontName')
 #if len(FontName)==0
  #error 'FontName is empty'
 #endif
 
-//Retrieve InstallerName
+//Retrieve Publisher
 #define public Publisher GetDataIniValue(SectionAbout, 'Publisher')
 #if len(Publisher)==0
  #error 'Publisher is empty'
@@ -108,12 +123,22 @@
  #error 'Copyright is empty'
 #endif
 
-//Retrieve icon file
-#define public IconFile GetDataIniValue(SectionGeneral, 'Icon')
-//Icon file can be empty, so no check here
+//Retrieve Website 
+#define public Website GetDataIniValue(SectionAbout, 'Website')
+#if len(Website)==0
+ #error 'Website is empty'
+#endif
 
 
-//Retrieve ExeFile (name of the setup)  
+//--- GENERAL section ---
+
+//Retrieve InstallerName
+#define public InstallerName GetDataIniValue(SectionGeneral, 'Name')
+#if len(InstallerName)==0
+ #error 'Name is empty'
+#endif
+
+//Retrieve ExeFile (name of the resulting setup file)  
 #define public ExeFile GetDataIniValue(SectionGeneral, 'ExeFile')
 #if len(ExeFile)==0
  #error 'ExeFile is empty'
@@ -125,11 +150,9 @@
  #error 'DestinationFolder is empty'
 #endif
 
-//Retrieve Website 
-#define public Website GetDataIniValue(SectionAbout, 'Website')
-#if len(Website)==0
- #error 'Website is empty'
-#endif
+//Retrieve icon file
+#define public IconFile GetDataIniValue(SectionGeneral, 'Icon')
+//Icon file can be empty, so no check here
 
 //Retrieve license file(s) 
 #define public LicenseFiles GetDataIniValue(SectionGeneral, 'LicenseFile')
@@ -138,9 +161,16 @@
 #endif
 
 
+//--- INSTALLFONTS section ---
 
 //Process *InstallFonts* section
 #emit '; Processing section ' + SectionInstallFonts
+
+//Retrieve source folder        
+#define font_source_folder GetDataIniValue(SectionInstallFonts, 'SourceFolder')
+#if len(font_source_folder)==0
+ #error 'Source folder is empty'
+#endif
 
 #define install_font_count_string GetDataIniValue(SectionInstallFonts, 'Count')
 //Check value
@@ -192,6 +222,7 @@
 #undef i
 
 
+//--- REMOVEFONTS section ---
 
 //Process *RemoveFont* sections
 #emit '; Processing section ' + SectionRemoveFonts
@@ -254,12 +285,6 @@
 
 
 
-//--------------------------------------------------------
-//Version of this installer script. Please do not change.
-#define public ScriptVersion '2.03'
-//--------------------------------------------------------
-
-
 
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
@@ -290,8 +315,8 @@
 
 
 [Setup]
-AppId={#SetupID}
-SetupMutex={#SetupID}_Mutex 
+AppId={#UniqueID}
+SetupMutex={#UniqueID}_Mutex 
 
 AppName={#InstallerName}
 
@@ -309,7 +334,7 @@ AppSupportURL={#Website}
 AppContact={#Publisher}
 ;Displayed as "Comments" 
 AppComments={#FontName} v{#FontVersion}
-;Displayed as "Update information:" -NOT USED RIGHT NOW-
+;NOT USED: Displayed as "Update information:"
 ;AppUpdatesURL=http://appupdates.com
 ;---------------------------------------------------
 
@@ -462,7 +487,7 @@ Name: "{app}\Website"; Filename: "{#Website}";
 ;------------------------
 
 ;------------------------
-;Check if we fint a font name without "Bold" or "Italic" in it and if so, we will add (Regular) and will delete it during installation
+;Check if we find a font name without "Bold" or "Italic" in it and if so, we will add (Regular) to the name and delete it during installation
 ;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
 #define public i 0
 #sub Sub_DeleteRegistryFontRegular
@@ -1022,11 +1047,11 @@ begin
       // Hence, this step is disabled although it is recommended to send out WM_FONTCHANGE. Given
       // that we request a restart anyway, this should only have a minimum impact (if at all). 
       {
-      customProgressPage.SetText('Informing Windows that fonts have changed...','');
+      ;customProgressPage.SetText('Informing Windows that fonts have changed...','');
 
       //Inform windows that fonts have changed (just to be sure we do this always)
       //See https://msdn.microsoft.com/en-us/library/windows/desktop/dd183326%28v=vs.85%29.aspx
-      SendBroadcastMessage(29, 0, 0);
+      ;SendBroadcastMessage(29, 0, 0);
       //WM_FONTCHANGE = 0x1D = 29
       }
 
@@ -1110,7 +1135,7 @@ end;
 	 text:string;		
 	begin		
 	 text:='';		
-	 text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;		
+	 text:=text + 'Setup is now ready to install XXX vYYYY on your system' + NewLine;		
 	 text:=text + NewLine;		
 	 text:=text + 'Click Install to continue.' + NewLine;		
 			

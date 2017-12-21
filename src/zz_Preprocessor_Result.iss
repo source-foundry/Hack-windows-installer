@@ -8,7 +8,21 @@
 
 
 
+;--------------------------------------------------------
+; FSCW Script Version: 2.09
+; Inno Setup Version.: 5.5.9
+; Inno Setup Type....: ANSI
+;--------------------------------------------------------
+
+
+
+
 ; ISPP Base Path: C:\dev\git\Hack-windows-installer\
+
+; DATA.INI Path: C:\dev\git\Hack-windows-installer\src\Data.ini
+
+
+
 
 
 
@@ -38,6 +52,7 @@
 
 
 ; Processing section InstallFonts
+
 
 
 
@@ -120,8 +135,6 @@
 
 
 
-
-
 ;---DEBUG---
 ;This output ensures that we do not have font_xxx array elements that are empty.
 ;Because the sub expects a string for each item, an error from ISPP about "Actual datatype not declared type" 
@@ -152,8 +165,8 @@ SetupMutex=HackWindowsInstaller_Mutex
 
 AppName=Hack Windows Installer
 
-AppVersion=1.4.2
-VersionInfoVersion=1.4.2
+AppVersion=1.5.0
+VersionInfoVersion=1.5.0
 
 AppPublisher=Michael Hex / Source Foundry
 AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
@@ -166,7 +179,7 @@ AppSupportURL=http://sourcefoundry.org/hack/
 AppContact=Michael Hex / Source Foundry
 ;Displayed as "Comments" 
 AppComments=Hack fonts v3.000
-;Displayed as "Update information:" -NOT USED RIGHT NOW-
+;NOT USED: Displayed as "Update information:"
 ;AppUpdatesURL=http://appupdates.com
 ;---------------------------------------------------
 
@@ -224,7 +237,7 @@ AllowCancelDuringInstall=False
 SetupAppTitle=Hack Windows Installer
 
 ;SetupWindowsTitle is displayed in the setup window itself so we better include the version
-SetupWindowTitle=Hack Windows Installer 1.4.2
+SetupWindowTitle=Hack Windows Installer 1.5.0
 
 ;Messages for the "Read to install" wizard page
   ;NOT USED - "Ready To Install" - below title bar
@@ -309,7 +322,7 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 ;------------------------
 
 ;------------------------
-;Check if we fint a font name without "Bold" or "Italic" in it and if so, we will add (Regular) and will delete it during installation
+;Check if we find a font name without "Bold" or "Italic" in it and if so, we will add (Regular) to the name and delete it during installation
 ;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
        Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Regular (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
@@ -318,7 +331,7 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
  
 [INI]
 ;Create an ini to make detection for enterprise deployment tools easy
-Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.4.2"
+Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Version"; String: "1.5.0"
 Filename: "{app}\InstallInfo.ini"; Section: "Main"; Key: "Name"; String: "Hack Windows Installer"
 
 
@@ -701,8 +714,8 @@ begin
 
   LogAsImportant('--------------------------------');
   LogAsImportant('Font name.....: Hack fonts');
-  LogAsImportant('Script version: 2.03');
-  LogAsImportant('Setup version.: 1.4.2');
+  LogAsImportant('Script version: 2.09');
+  LogAsImportant('Setup version.: 1.5.0');
   LogAsImportant('Font version..: 3.000');
   LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
   LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
@@ -795,9 +808,9 @@ begin
       
       
       {
-      customProgressPage.SetText('Informing Windows that fonts have changed...','');
+      ;customProgressPage.SetText('Informing Windows that fonts have changed...','');
 
-      SendBroadcastMessage(29, 0, 0);
+      ;SendBroadcastMessage(29, 0, 0);
       }
 
       customProgressPage.SetText('Storing font data...','');
@@ -868,7 +881,7 @@ end;
 	 text:string;		
 	begin		
 	 text:='';		
-	 text:=text + 'Setup is now ready to install Hack v2.XXX on your system' + NewLine;		
+	 text:=text + 'Setup is now ready to install XXX vYYYY on your system' + NewLine;		
 	 text:=text + NewLine;		
 	 text:=text + 'Click Install to continue.' + NewLine;		
 			
