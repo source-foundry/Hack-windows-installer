@@ -2,9 +2,9 @@
 
 A Windows installer for the [Hack](https://github.com/source-foundry/Hack) typeface.
 
-While it might seem like overkill to use a Windows installer for fonts, there is good reason for this on the Windows platform. A number of things can go wrong when one tries to install or update frequently updated fonts manually (see [issue #152](https://github.com/source-foundry/Hack/issues/152) and [issue #129](https://github.com/source-foundry/Hack/issues/129) in the [Hack repository](https://github.com/source-foundry/Hack/)). 
+While it might seem like overkill to use a Windows installer for fonts, there is good reason for this on the Windows platform. A number of things can go wrong when one tries to install or update frequently updated fonts manually (see [issue #152](https://github.com/source-foundry/Hack/issues/152), [issue #129](https://github.com/source-foundry/Hack/issues/129) and [issue #362](https://github.com/source-foundry/Hack/issues/362) in the [Hack repository](https://github.com/source-foundry/Hack/)). 
 
-This installer addresses most of the [commonly obeserved issues](https://github.com/source-foundry/Hack-windows-installer/blob/master/FontInstallationIssues.md).
+This installer addresses nearly all of the [commonly obeserved issues](https://github.com/source-foundry/Hack-windows-installer/blob/master/FontInstallationIssues.md).
 
 
 ## Usage
@@ -55,4 +55,4 @@ In order to fix a bug you have encountered, we require the log file. To view thi
 
 
 ## License
-Copyright © 2016 [Michael Hex](http://www.texhex.info/) / Source Foundry. Licensed under the **MIT License**. For details, please see [LICENSE.txt](https://github.com/source-foundry/Hack-windows-installer/blob/master/LICENSE.txt).
+Copyright © 2016-2017 [Michael Hex](http://www.texhex.info/) / Source Foundry. Licensed under the **MIT License**. For details, please see [LICENSE.txt](https://github.com/source-foundry/Hack-windows-installer/blob/master/LICENSE.txt).
