@@ -34,6 +34,12 @@ Depending what else has gone wrong, the font registration data (Name and File) i
 
 *HackWindowsInstaller* will ensure that the files and the registration data are exactly as desired and reinstall the font if this is not the case.
 
+## The regular variant of a font can be registered as "Regular"
+
+When installing a font using the *Fonts* applet from Control Panel it sometimes registers this variant as “Regular” although Windows does not expect “Regular” to be used. This can lead to a situation where two font files are registered for the “Regular” variant and causing display issues.
+
+*HackWindowsInstaller* will delete any found registry entry for “Hack Regular”. 
+
 ## A font subsitute could be defined
 
 It is possible using the registry location *HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes* to define an "alias" for a font that is mapped to a different font. For example, it is possible to define that Windows will use "Arial" when the font "Hack (Italic)" is requested. This can cause all sort of display problems.
@@ -66,7 +72,7 @@ After that, restart the computer.
 
 
 ----------
-2016-04-25 (Updated 2017-11-01)
+2016-04-25 (Updated 2017-12-21)
 
 ~Michael 'Tex' Hex
 
