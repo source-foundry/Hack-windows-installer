@@ -2,11 +2,13 @@
 
 When creating this setup, and when deploying this setup to 200+ machines, I faced some issues that come from the fact that Windows is not very smart when handling fonts. This file lists the issues I'm aware of.
 
+
 ## Font files can be damaged
 
 For whatever reason, sometimes the *.ttf files are broken and depending how exactly they are broken can lead to all sorts of effects, from "Font can't be used" to "Some glyphs are broken".
 
 *HackWindowsInstaller* uses SHA-1 hashes to compare the files that should be installed with the files actually installed. This has the side effect that always the files included with the setup are installed, even if one font file was already manually updated to a newer version. 
+
 
 ## The FONTS applet might save fonts as (Fontname)_X.ttf
 
@@ -16,11 +18,15 @@ Depending on the application and the caching method it can happen that the appli
  
 *HackWindowsInstaller* will delete any *(Fontname)_X.ttf* for each font file it installs. However, if a font file was renamed, *HackWindowsInstaller* won’t delete the old _0.ttf file because this deletion is executed upon installation and depends on the current font names.
 
-## Some fonts can be locked when in use
+
+## Font files can be locked
 
 As soon as a font is used, the TTF file for it is locked and can’t be updated to a newer version.
 
-*HackWindowsInstaller* will try to replace any locked file five times and if this doesn’t work, it will use `PendingFileOperations` to replace the file in question upon next boot. 
+*HackWindowsInstaller* will try to replace any locked file five times and if this doesn’t work, it will use `PendingFileOperations` to replace the file in question upon next boot.
+
+For files that only need to be deleted (not updated), *HackWindowsInstaller* will also use `PendingFileOperations` if they can not be deleted. 
+
 
 ## The FontCache service can lock fonts during installation
 
@@ -28,11 +34,13 @@ For performance reasons, Windows includes a cache for all installed fonts. Becau
 
 *HackWindowsInstaller* will stop `FontCache` (and `FontCache3.0.0.0` for .NET if it exists) during installation.
 
+
 ## The font data in the registry and the font files can be different
 
 Depending what else has gone wrong, the font registration data (Name and File) inside the registry can be different from the actual fonts installed in C:\WINDOWS\FONTS. When this happens, the fonts can go “crazy” - see issue [#152 for Hack](https://github.com/chrissimpkins/Hack/issues/152).
 
 *HackWindowsInstaller* will ensure that the files and the registration data are exactly as desired and reinstall the font if this is not the case.
+
 
 ## The regular variant of a font can be registered as "Regular"
 
@@ -40,11 +48,13 @@ When installing a font using the *Fonts* applet from Control Panel it sometimes 
 
 *HackWindowsInstaller* will delete any found registry entry for “Hack Regular”. 
 
+
 ## A font subsitute could be defined
 
 It is possible using the registry location *HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes* to define an "alias" for a font that is mapped to a different font. For example, it is possible to define that Windows will use "Arial" when the font "Hack (Italic)" is requested. This can cause all sort of display problems.
 
 *HackWindowsInstaller* will delete any found substitutes for the font that is installed.   
+
 
 ## A font cannot be updated without restart
 
