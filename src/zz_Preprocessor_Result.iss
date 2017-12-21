@@ -9,10 +9,9 @@
 
 
 ;--------------------------------------------------------
-; FSCW Script Version: 2.09
+; FSCW Script Version: 2.10
 ; Inno Setup Version.: 5.5.9
 ; Inno Setup Type....: ANSI
-; 
 ;--------------------------------------------------------
 
 
@@ -25,6 +24,10 @@
 
 
 
+
+
+
+  
 
 
 
@@ -144,8 +147,8 @@
 
 ;General procedure
 ; a) Ready to install
-; b) INSTALL
-; b1) InstallDelete
+; b) INSTALL (Step ssInstall)
+; b1) InstallDeleteAction
 ; b2) BeforeInstallAction (Stop services)
 ; b3) Install files
 ; b4) AfterInstallAction (Start services)
@@ -162,7 +165,7 @@ AppVersion=1.5.0
 VersionInfoVersion=1.5.0
 
 AppPublisher=Michael Hex / Source Foundry
-AppCopyright=Copyright © 2016 Michael Hex / Source Foundry
+AppCopyright=Copyright © 2016-2017 Michael Hex / Source Foundry
 
 ;Information displayed in Control Panel -> Add/Remove Programs applet
 ;---------------------------------------------------
@@ -267,28 +270,10 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 ;------------------------
 
 
-[InstallDelete]
-;Helper macro to add a string at the end of filename, but before the extension
+; InstallDelete section is no longer used as it can not delete any file that is locked.
+; See pascal scripting function "DeleteUnwantedFontFiles()" ( FillUnwantedFontFilesArray() ) for new delete code. 
+;[InstallDelete]
 
-;------------------------
-;If a user copies *.TTF files to the "Fonts" applet and a font file with the same name already exists, 
-;Windows will simply append "_0" (or _1) to the font file and copy it.
-;These "ghost" files need to be exterminated!
-  Type: files; Name: "{fonts}\Hack-Bold_*.ttf"; 
-  Type: files; Name: "{fonts}\Hack-Regular_*.ttf"; 
-  Type: files; Name: "{fonts}\Hack-BoldItalic_*.ttf"; 
-  Type: files; Name: "{fonts}\Hack-Italic_*.ttf"; 
-;------------------------
-
-;------------------------
-;Remove old font files during install
-  Type: files; Name: "{fonts}\Hack-BoldOblique*.*"; 
-  Type: files; Name: "{fonts}\Hack-RegularOblique*.*"; 
-  Type: files; Name: "{fonts}\Hack-Regular-linegap*.*"; 
-  Type: files; Name: "{fonts}\Hack-Bold-linegap*.*"; 
-  Type: files; Name: "{fonts}\Hack-Italic-linegap*.*"; 
-  Type: files; Name: "{fonts}\Hack-BoldItalic-linegap*.*"; 
-;------------------------
 
 
 [Registry]
@@ -303,6 +288,12 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
 ;------------------------
 
 ;------------------------
+;Check if we find a font name without "Bold" or "Italic" in it and if so, we will add (Regular) to the name and delete it during installation
+;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
+       Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Regular (TrueType)"; ValueType: none; Flags: deletevalue;
+;------------------------
+
+;------------------------
 ;Delete any entry found in FontSubsitutes for each of the fonts that will be installed
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Bold (TrueType)"; ValueType: none; Flags: deletevalue;
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack (TrueType)"; ValueType: none; Flags: deletevalue;
@@ -310,11 +301,6 @@ Name: "{app}\Website"; Filename: "http://sourcefoundry.org/hack/";
   Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes"; ValueName: "Hack Italic (TrueType)"; ValueType: none; Flags: deletevalue;
 ;------------------------
 
-;------------------------
-;Check if we find a font name without "Bold" or "Italic" in it and if so, we will add (Regular) to the name and delete it during installation
-;This is necessary as Windows does not expect (Regular) to be used, but sometimes the Font applet add this text anyway
-       Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts"; ValueName: "Hack Regular (TrueType)"; ValueType: none; Flags: deletevalue;
-;------------------------
 
 
  
@@ -333,7 +319,6 @@ Type: files; Name: "{app}\Log*.txt"
 
 
 [Code]
-
 
 type
 	SERVICE_STATUS = record
@@ -402,9 +387,8 @@ begin
 	if UsingWinNT() = true then begin
 		Result := OpenSCManager('','ServicesActive',SC_MANAGER_ALL_ACCESS);
 		if Result = 0 then
-			MsgBox('the servicemanager is not available', mbError, MB_OK)
-	end
-	else begin
+			 MsgBox('the servicemanager is not available', mbError, MB_OK)
+	end	else begin
 			MsgBox('only nt based systems support services', mbError, MB_OK)
 			Result := 0;
 	end
@@ -418,12 +402,14 @@ begin
 	hSCM := OpenServiceManager();
 	Result := false;
 	if hSCM <> 0 then begin
-		hService := OpenService(hSCM,ServiceName,SERVICE_QUERY_CONFIG);
-        if hService <> 0 then begin
-            Result := true;
-            CloseServiceHandle(hService)
-		end;
-        CloseServiceHandle(hSCM)
+		 hService := OpenService(hSCM,ServiceName,SERVICE_QUERY_CONFIG);
+    
+     if hService <> 0 then begin
+        Result := true;
+       CloseServiceHandle(hService)
+		 end;
+
+    CloseServiceHandle(hSCM)
 	end
 end;
 
@@ -435,12 +421,14 @@ begin
 	hSCM := OpenServiceManager();
 	Result := false;
 	if hSCM <> 0 then begin
-		hService := OpenService(hSCM,ServiceName,SERVICE_START);
-        if hService <> 0 then begin
-        	Result := StartNTService(hService,0,0);
-            CloseServiceHandle(hService)
-		end;
-        CloseServiceHandle(hSCM)
+		 hService := OpenService(hSCM,ServiceName,SERVICE_START);
+     
+     if hService <> 0 then begin
+      	Result := StartNTService(hService,0,0);
+        CloseServiceHandle(hService)
+		 end;
+
+     CloseServiceHandle(hSCM)
 	end;
 end;
 
@@ -453,12 +441,14 @@ begin
 	hSCM := OpenServiceManager();
 	Result := false;
 	if hSCM <> 0 then begin
-		hService := OpenService(hSCM,ServiceName,SERVICE_STOP);
-        if hService <> 0 then begin
-        	Result := ControlService(hService,SERVICE_CONTROL_STOP,Status);
-            CloseServiceHandle(hService)
-		end;
-        CloseServiceHandle(hSCM)
+		 hService := OpenService(hSCM,ServiceName,SERVICE_STOP);
+     
+     if hService <> 0 then begin
+       	Result := ControlService(hService,SERVICE_CONTROL_STOP,Status);
+       CloseServiceHandle(hService)
+		 end;
+     
+     CloseServiceHandle(hSCM)
 	end;
 end;
 
@@ -471,14 +461,15 @@ begin
 	hSCM := OpenServiceManager();
 	Result := false;
 	if hSCM <> 0 then begin
-		hService := OpenService(hSCM,ServiceName,SERVICE_QUERY_STATUS);
-    	if hService <> 0 then begin
-			if QueryServiceStatus(hService,Status) then begin
-				Result :=(Status.dwCurrentState = SERVICE_RUNNING)
-        	end;
-            CloseServiceHandle(hService)
-		    end;
-        CloseServiceHandle(hSCM)
+		 hService := OpenService(hSCM,ServiceName,SERVICE_QUERY_STATUS);
+     
+     if hService <> 0 then begin
+			  if QueryServiceStatus(hService,Status) then begin
+				   Result :=(Status.dwCurrentState = SERVICE_RUNNING)
+        end;
+        CloseServiceHandle(hService)
+		 end;
+     CloseServiceHandle(hSCM)
 	end
 end;
 
@@ -508,13 +499,25 @@ end;
 
 
 
+function BoolToStr(Value: Boolean): String; 
+begin
+  if Value then Result := 'True'
+           else Result := 'False';
+end;
+
+
   
 var
 
   FontFiles: array of string;
   FontFilesHashes: array of string;
   FontFilesNames: array of string;
+
+  UnwantedFontFiles: array of string;
   
+  FontFilesToBeDeleted: array of string;
+
+
   InstalledFontsHashes: array of string;
 
   FontCacheService_Stopped:boolean;
@@ -541,7 +544,6 @@ begin
   SetArrayLength(FontFilesHashes, curSize+1)
   SetArrayLength(FontFilesNames, curSize+1)
   
-
   FontFiles[curSize]:=fontFile;
   FontFilesHashes[curSize]:=fontHash;
   FontFilesNames[curSize]:=fontName;
@@ -551,13 +553,46 @@ end;
 procedure FillFontDataArray();
 begin
 
-
   AddFontData('Hack-Bold.ttf', 'Hack Bold', '2d5c7e8b0091cce6a9adf71f7c8992365d486f70');
   AddFontData('Hack-Regular.ttf', 'Hack', '5eceb4a3b9bc49d23da0499317f4bed5d5a0b4bb');
   AddFontData('Hack-BoldItalic.ttf', 'Hack Bold Italic', 'c05822be3b154476970241d6bddc0fe1662639da');
   AddFontData('Hack-Italic.ttf', 'Hack Italic', '0c5a8a3396eaa2c49e1c317b47afee5b08a5a27a');
 
 end;
+
+
+
+procedure AddUnwantedFontFile(fontFile:string);
+var
+  curSize: integer;
+begin
+  curSize:=GetArrayLength(UnwantedFontFiles);
+
+  SetArrayLength(UnwantedFontFiles, curSize+1)
+
+  UnwantedFontFiles[curSize]:=fontFile;
+end;
+
+
+procedure FillUnwantedFontFilesArray();
+begin
+
+  AddUnwantedFontFile('Hack-Bold_*.ttf');
+  AddUnwantedFontFile('Hack-Regular_*.ttf');
+  AddUnwantedFontFile('Hack-BoldItalic_*.ttf');
+  AddUnwantedFontFile('Hack-Italic_*.ttf');
+
+
+  AddUnwantedFontFile('Hack-BoldOblique*.*');
+  AddUnwantedFontFile('Hack-RegularOblique*.*');
+  AddUnwantedFontFile('Hack-Regular-linegap*.*');
+  AddUnwantedFontFile('Hack-Bold-linegap*.*');
+  AddUnwantedFontFile('Hack-Italic-linegap*.*');
+  AddUnwantedFontFile('Hack-BoldItalic-linegap*.*');
+
+end;
+
+
 
 procedure LogAsImportant(message:string);
 var
@@ -579,19 +614,53 @@ procedure InitializeWizard;
 var
   title, subTitle:string;
 begin
+  LogAsImportant('---InitializeWizard---');
+
   ChangesRequired:=false;
+
   FontCacheService_Stopped:=false;
   FontCache30Service_Stopped:=false;
 
   BeforeInstallActionWasRun:=false;
 
   FillFontDataArray;
+  FillUnwantedFontFilesArray;  
 
-  title:=SetupMessage(msgWizardPreparing);
-  subTitle:=SetupMessage(msgPreparingDesc);
+  title:=SetupMessage(msgWizardInstalling);
   
+  subTitle:=SetupMessage(msgInstallingLabel);  
+
   StringChangeEx(subTitle, '[name]', 'Hack Windows Installer', True);
+  
   customProgressPage:=CreateOutputProgressPage(title, subTitle);
+
+  LogAsImportant('---DONE---');
+end;
+
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  LogAsImportant('---PrepareToInstall---');
+
+  LogAsImportant('Font name.....: Hack fonts');
+  LogAsImportant('Font version..: 3.000');
+  LogAsImportant('Setup version.: 1.5.0');
+  LogAsImportant('Script version: 2.10');
+  LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
+  LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
+  LogAsImportant('Dest folder...: ' + ExpandConstant('{app}'));
+  LogAsImportant('--------------------------------');
+
+
+  
+  {
+  If RegValueExists(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager', 'PendingFileRenameOperations') then begin
+     result:='Pending system changes, that require a reboot, have been detected. Please restart your computer.';
+     NeedsRestart:=true;
+  end; 
+  }
+
+  LogAsImportant('---DONE---');
 end;
 
 
@@ -687,64 +756,173 @@ begin
      end else begin
         result:=true; //Installation required
      end;
+  end; 
+end;
+
+
+procedure PrepareListOfFontFilesToBeDeleted();
+var
+  i:integer;
+  curFont:string;  
+  foundFontFile:string;
+  findRec: TFindRec;
+  arraySize:integer;
+begin
+  
+  for i := 0 to GetArrayLength(UnwantedFontFiles)-1 do begin      
+      curFont:=ExpandConstant('{fonts}\'+UnwantedFontFiles[i]);
+
+      LogAsImportant('Unwanted font file entry: ' + curFont);      
+      foundFontFile:='';
+      
+      if FindFirst(curFont, FindRec) then begin
+         try
+            repeat
+               if FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY = 0 then begin
+                  foundFontfile:=ExpandConstant('{fonts}\'+FindRec.Name);
+                  LogAsImportant('           Matching file: ' + foundFontfile);
+                  
+                  arraySize:=GetArrayLength(FontFilesToBeDeleted);
+                  SetArrayLength(FontFilesToBeDeleted, arraySize+1)
+                  FontFilesToBeDeleted[arraySize]:=foundFontFile;
+               end;
+            
+            until not FindNext(FindRec);
+         finally
+           FindClose(FindRec);
+         end;
+      end;
+      
   end;
- 
+
+end;
+
+
+procedure PrepareInstalledFontHashes();
+var
+  i:integer;
+  currentFont:string;
+  currentFontFileNameWindows:string;
+
+begin
+  SetArrayLength(InstalledFontsHashes, GetArrayLength(FontFiles));          
+  
+  for i := 0 to GetArrayLength(FontFiles)-1 do begin
+      currentFont:=FontFiles[i];
+      LogAsImportant('Calculating hash for '+currentFont);
+      LogAsImportant('   File from setup: ' +  FontFilesHashes[i]);    
+         
+      currentFontFileNameWindows:=ExpandConstant('{fonts}\'+currentFont);
+    
+      if FileExists(currentFontFileNameWindows) then begin
+         InstalledFontsHashes[i]:=GetSHA1OfFile(currentFontFileNameWindows);
+      end else begin
+         InstalledFontsHashes[i]:='-NOT FOUND-';
+      end;
+     
+      LogAsImportant('   File in \fonts : ' +  InstalledFontsHashes[i]);
+  end;
+
+end;
+
+
+const
+ MOVEFILE_DELAY_UNTIL_REBOOT = $00000004;
+
+function MoveFileEx(lpExistingFileName: string; lpNewFileName: string; dwFlags: Integer): Integer;
+external 'MoveFileExA@kernel32.dll stdcall';
+
+
+procedure DeleteUnwantedFontFiles();
+var
+  i:integer;
+  currentFile:string;
+  returnCode:integer;
+  
+  errorCode:Longint;
+  errorMessage:string;
+  errorText:string;
+  errorTextLong:string;
+begin
+  for i := 0 to GetArrayLength(FontFilesToBeDeleted)-1 do begin      
+
+      currentFile:=FontFilesToBeDeleted[i];
+
+      LogAsImportant('Deleting file: ' + currentFile);      
+      if DeleteFile(currentFile)=false then begin
+         LogAsImportant('   Unable to delete file - will mark it to be removed upon next reboot');
+         
+         returnCode:=MoveFileEx(currentFile, '', MOVEFILE_DELAY_UNTIL_REBOOT);         
+         if returnCode=0 then begin //This function will return 0 if *FAILED*
+            errorCode:=DLLGetLastError;
+            errorMessage:=SysErrorMessage(errorCode);
+
+            errorText:='MoveFileEx failed with error code ' + IntToStr(errorCode) + ': ' + errorMessage;
+            LogAsImportant('   ' + errorText);
+
+            errorTextLong:='Unable to delete file [' + currentFile + '] - ' + errorText; 
+            
+            RaiseException(errorTextLong);
+         end;
+
+         LogAsImportant('   Done');
+      end;
+
+  end;
+
 end;
 
 
 procedure BeforeInstallAction();
 var
-  i:integer;
-  currentFont:string;
-  currentFontFileNameWindows:string;
+ deleteChanges:boolean;
+ installChanges:boolean;
  
 begin
   LogAsImportant('---BeforeInstallAction START---');
-
-  LogAsImportant('--------------------------------');
-  LogAsImportant('Font name.....: Hack fonts');
-  LogAsImportant('Script version: 2.09');
-  LogAsImportant('Setup version.: 1.5.0');
-  LogAsImportant('Font version..: 3.000');
-  LogAsImportant('Local time....: ' + GetDateTimeString('yyyy-dd-mm hh:nn', '-', ':'));
-  LogAsImportant('Fonts folder..: ' + ExpandConstant('{fonts}'));
-  LogAsImportant('Dest folder...: ' + ExpandConstant('{app}'));
-  LogAsImportant('--------------------------------');
 
   customProgressPage.SetProgress(0, 0);
   customProgressPage.Show;
 
   try
     begin         
-     customProgressPage.SetText('Calculating hashes for fonts already installed...', '');
      
-     SetArrayLength(InstalledFontsHashes, GetArrayLength(FontFiles));
-     
-     LogAsImportant('---HASH CALCULATION---');
-     for i := 0 to GetArrayLength(FontFiles)-1 do begin
-         currentFont:=FontFiles[i];
-         LogAsImportant('Calculating hash for '+currentFont);
-         LogAsImportant('   File from setup: ' +  FontFilesHashes[i]);    
-         
-         currentFontFileNameWindows:=ExpandConstant('{fonts}\'+currentFont);
-    
-         if FileExists(currentFontFileNameWindows) then begin
-            InstalledFontsHashes[i]:=GetSHA1OfFile(currentFontFileNameWindows);
-         end else begin
-            InstalledFontsHashes[i]:='-NOT FOUND-';
-         end;
-     
-         LogAsImportant('   File in \fonts : ' +  InstalledFontsHashes[i]);
-     end;
+     LogAsImportant('-CHECK UNWANTED FONT FILES-');
+     customProgressPage.SetText('Checking if font files need to be deleted...', '');     
+     PrepareListOfFontFilesToBeDeleted();
      LogAsImportant('----------------------');
+
+     if GetArrayLength(FontFilesToBeDeleted) > 0 then begin
+        deleteChanges:=true;
+     end else begin
+        deleteChanges:=false;
+     end;
      
      
-     ChangesRequired:=false;
+     LogAsImportant('-CALCULATE HASH FOR EXISTING FONTS-');
+     customProgressPage.SetText('Calculating hashes for installed fonts...', '');     
+     PrepareInstalledFontHashes();
+     LogAsImportant('----------------------');
 
      if AtLeastOneFontRequiresInstallation then begin
-        ChangesRequired:=true;
+        installChanges:=true;
+     end else begin
+        installChanges:=false;
      end;
 
+     
+     ChangesRequired:=false;
+     if (deleteChanges) or (installChanges) then begin
+        ChangesRequired:=true;
+     end; 
+     
+     LogAsImportant('----------------------');     
+     LogAsImportant('Font deletion required: ' + BoolToStr(deleteChanges));
+     LogAsImportant('Font installation required: ' + BoolToStr(installChanges));
+     LogAsImportant('Pending changes: ' + BoolToStr(ChangesRequired));
+     LogAsImportant('----------------------');     
+
+      
      FontCacheService_Stopped:=false;
      FontCache30Service_Stopped:=false;
 
@@ -755,6 +933,12 @@ begin
         customProgressPage.SetText('Stopping service FontCache3.0.0.0...','');
         FontCache30Service_Stopped:=StopNTService2('FontCache3.0.0.0')
      end;
+
+
+     LogAsImportant('-DELETE UNWANTED FONT FILES-');
+     customProgressPage.SetText('Deleting unwanted font files...', '');     
+     DeleteUnwantedFontFiles();
+     LogAsImportant('----------------------');
 
     
   end;
