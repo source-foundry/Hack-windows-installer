@@ -37,9 +37,18 @@ For performance reasons, Windows includes a cache for all installed fonts. Becau
 
 ## The font data in the registry and the font files can be different
 
-Depending what else has gone wrong, the font registration data (Name and File) inside the registry can be different from the actual fonts installed in C:\WINDOWS\FONTS. When this happens, the fonts can go “crazy” - see issue [#152 for Hack](https://github.com/chrissimpkins/Hack/issues/152).
+Depending what else has gone wrong, the font registration data (Name and File) inside the registry can be different from the actual fonts installed in *C:\WINDOWS\FONTS*. When this happens, the fonts can go “crazy” - see issue [#152 for Hack](https://github.com/chrissimpkins/Hack/issues/152).
 
 *HackWindowsInstaller* will ensure that the files and the registration data are exactly as desired and reinstall the font if this is not the case.
+
+
+## Java based programs will try to combine Font registry data and all available font files
+
+Java based programs not just relay on the font data found in the registry, they will also enumerate all font found in *C:\WINDOWS\FONTS*. This can lead to a situation where Java has more than one font file available for the same variant (Bold, Italic etc.) and causing massive display errors (see [issue 345](https://github.com/source-foundry/Hack/issues/345#issuecomment-340385407) and [issue 362](https://github.com/source-foundry/Hack/issues/362) for Hack). 
+
+Windows programs that relay only on the font data in the registry do not have any issues in this case as they do check the \Fonts folder directly.
+
+*HackWindowsInstaller* will delete any additional Hack files we are aware off, for example files from Hack v2 or the special *linegap* files to make sure only the main Hack files are found in *C:\WINDOWS\FONTS*.  
 
 
 ## The regular variant of a font can be registered as "Regular"
