@@ -903,6 +903,7 @@ begin
   end; 
   }
 
+  result:='';
   LogAsImportant('---DONE---');
 end;
 
