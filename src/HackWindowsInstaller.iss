@@ -8,7 +8,7 @@
 //
 //--------------------------------------------------------
 //Version of this installer script. Please do not change.
-#define public ScriptVersion '2.10'
+#define public ScriptVersion '2.11'
 //--------------------------------------------------------
 
 
@@ -1348,6 +1348,10 @@ begin
 
  if CurStep=ssPostInstall then begin
     AfterInstallAction(); 
+ end;
+
+ if CurStep=ssDone then begin
+    LogAsImportant('Setup finished');
  end;
 
 end;

@@ -9,8 +9,8 @@ This installer addresses nearly all of the [commonly obeserved issues](https://g
 
 ## Usage
 
-- Download `HackWindowsInstaller.exe` from [Releases](https://github.com/source-foundry/Hack-windows-installer/releases/latest)
-- Double click `HackWindowsInstaller.exe`
+- Download `HackFontsWindowsInstaller.exe` from [Releases](https://github.com/source-foundry/Hack-windows-installer/releases/latest)
+- Double click `HackFontsWindowsInstaller.exe`
 - If you see a *Windows protected your PC* message, click on `More info` and select `Run anyway`. This *Windows SmartScreen warning* can be safely ignored, the installer is virus and addware free (see VirusTotal report for each release) 
 - Follow the installation instructions
 - If a font file was installed or removed, the installer will request a reboot
@@ -28,16 +28,16 @@ We release the compiled installer with its SHA256 hash digest and [VirusTotal](h
 
 To install silently, use the following command:
 
- ``start /wait HackWindowsInstaller.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS /NORESTARTAPPLICATIONS``
+ ``start /wait HackFontsWindowsInstaller.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS /NORESTARTAPPLICATIONS``
 
 To remove it silently:
 
- ``C:\Program Files\Hack Windows Installer\unins000.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART``
+ ``C:\Program Files\Hack Fonts\unins000.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART``
 
 
 ## Troubleshooting
 
-The installer creates a log file on the path `C:\Users\ (Username) \AppData\Local\Temp\Setup Log (Year-Month-Day) #XXX.txt` with full information, as well as `C:\Program Files\Hack Windows Installer\Log-FontData.txt`. The later only contains a subset of the first. 
+The installer creates a log file on the path `C:\Users\ (Username) \AppData\Local\Temp\Setup Log (Year-Month-Day) #XXX.txt` with full information, as well as `C:\Program Files\Hack Fonts\Log-FontData.txt`. The later only contains a subset of the first. 
 
 If you are using EMET: If the "Only trusted fonts" option is activated, you need to declare Hack as trusted or it will not be usable.
 
@@ -48,7 +48,7 @@ Any constructive contribution is very welcome!
 
 In order to fix a bug you have encountered, we require the log file. To view this log file, do the following:
 
-- Open the folder `C:\Program Files\Hack Windows Installer`
+- Open the folder `C:\Program Files\Hack Fonts` (or `C:\Program Files\Hack Windows Installer` if you installed it before 1.6.0)
 - Locate the file called `Log-FontData.txt`
 - Open a new [issue](https://github.com/source-foundry/Hack-windows-installer/issues/new)
 - Paste the entire text of the log file  
